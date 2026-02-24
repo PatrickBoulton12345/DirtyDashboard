@@ -151,11 +151,11 @@
     }
     .table-header {
       background: var(--brand-ocean-blue); color: #fff; font-family: 'Octarine', sans-serif; font-weight: 700;
-      display: grid; grid-template-columns: 1fr 5fr 3fr 3fr 2fr; gap: 1rem; padding: 1rem;
+      display: grid; grid-template-columns: 1fr 5fr 3fr 3fr; gap: 1rem; padding: 1rem;
       font-size: .875rem;
     }
     @media (min-width: 768px) {
-      .table-header { grid-template-columns: 1fr 5fr 2fr 3fr 3fr 2fr; font-size: 1rem; }
+      .table-header { grid-template-columns: 1fr 5fr 2fr 3fr 3fr; font-size: 1rem; }
     }
     .table-header > div { display: flex; align-items: center; justify-content: center; cursor: pointer; border-radius: .25rem; padding: .25rem .5rem; text-align: center; }
     .table-header > div:hover { background: rgba(255,255,255,.15); }
@@ -164,11 +164,11 @@
     @media (min-width: 768px) { .table-header .col-total { display: flex; } }
 
     .table-row {
-      display: grid; grid-template-columns: 1fr 5fr 3fr 3fr 2fr; gap: 1rem; padding: 1rem;
+      display: grid; grid-template-columns: 1fr 5fr 3fr 3fr; gap: 1rem; padding: 1rem;
       border-bottom: 1px solid #e5e7eb; transition: background .2s;
     }
     @media (min-width: 768px) {
-      .table-row { grid-template-columns: 1fr 5fr 2fr 3fr 3fr 2fr; }
+      .table-row { grid-template-columns: 1fr 5fr 2fr 3fr 3fr; }
     }
     .table-row:hover { background: #f9fafb; }
     .table-row > div { display: flex; align-items: center; justify-content: center; text-align: center; }
@@ -318,21 +318,6 @@
       <p>it doesn't have to be this way, and local authorities should be made to ACT</p>
     </div>
 
-    <!-- Newsletter 1 -->
-    <div style="display:flex;flex-direction:column;align-items:center;gap:1rem;max-width:28rem;margin:0 auto;width:100%;">
-      <h3 class="font-octarine" style="font-weight:700;font-size:1.5rem;">Stay updated</h3>
-      <form class="newsletter-form" id="newsletter-form-1" onsubmit="return handleNewsletter(event, this)">
-        <div style="display:flex;flex-direction:column;gap:.5rem;">
-          <label>first name*</label>
-          <input type="text" name="firstName" required>
-        </div>
-        <div style="display:flex;flex-direction:column;gap:.5rem;">
-          <label>email*</label>
-          <input type="email" name="email" required>
-        </div>
-        <button type="submit">join the mailing list</button>
-      </form>
-    </div>
   </div>
 
   <!-- ════════════════════════════════════════════ LEAGUE TABLE ════════════════════════════════════════════ -->
@@ -350,9 +335,8 @@
           <div onclick="sortTable('rank')">#</div>
           <div class="col-name" onclick="sortTable('authority')"><span>Local Authority</span><span class="sort-icon" id="sort-authority"></span></div>
           <div class="col-total" onclick="sortTable('totalCases')"><span>Total Cases</span><span class="sort-icon" id="sort-totalCases"></span></div>
-          <div onclick="sortTable('unresolvedCases')"><span>Unresolved<br>Cases</span><span class="sort-icon" id="sort-unresolvedCases"></span></div>
           <div onclick="sortTable('penaltyRate')"><span>Penalty Rate (FPNs)</span><span class="sort-icon" id="sort-penaltyRate"></span></div>
-          <div onclick="sortTable('prosecutionRate')"><span>Prosecution Rate</span><span class="sort-icon" id="sort-prosecutionRate"></span></div>
+          <div onclick="sortTable('fpnToIncidents')"><span>% of FPNs<br>to Incidents</span><span class="sort-icon" id="sort-fpnToIncidents"></span></div>
         </div>
         <div id="table-body">
           <!-- Rows rendered by JS -->
@@ -383,8 +367,8 @@
           <div class="stat-desc">Total Cases Tracked</div>
         </div>
         <div class="stat-card">
-          <div class="stat-big" style="color:#ea580c;" id="stat-avg-prosecution">—</div>
-          <div class="stat-desc">Average Prosecution Rate</div>
+          <div class="stat-big" style="color:#ea580c;" id="stat-avg-fpn">—</div>
+          <div class="stat-desc">Avg % of FPNs to Incidents</div>
         </div>
       </div>
 
@@ -396,24 +380,21 @@
         <p>A Fixed Penalty Notice is a mechanism from the Government to allow someone to avoid prosecution and discharge their liability through paying a fine.</p>
         <p>Anything highlighted in purple is a suspicious value. This could be due to several factors, such as multiple offenders being involved in a single fly-tipping incident, or reporting issues.</p>
       </div>
-    </div>
-  </div>
-
-  <!-- ════════════════════════════════════════════ NEWSLETTER 2 ════════════════════════════════════════════ -->
-  <div class="section" style="padding-bottom:3rem;">
-    <div style="display:flex;flex-direction:column;align-items:center;gap:1rem;max-width:28rem;margin:0 auto;width:100%;">
-      <h3 class="font-octarine" style="font-weight:700;font-size:1.5rem;text-align:center;">Find out how you can help</h3>
-      <form class="newsletter-form" id="newsletter-form-2" onsubmit="return handleNewsletter(event, this)">
-        <div style="display:flex;flex-direction:column;gap:.5rem;">
-          <label>first name*</label>
-          <input type="text" name="firstName" required>
-        </div>
-        <div style="display:flex;flex-direction:column;gap:.5rem;">
-          <label>email*</label>
-          <input type="email" name="email" required>
-        </div>
-        <button type="submit">join the mailing list</button>
-      </form>
+      <!-- Stay updated newsletter -->
+      <div style="display:flex;flex-direction:column;align-items:center;gap:1rem;max-width:28rem;margin:2rem auto 0;width:100%;">
+        <h3 class="font-octarine" style="font-weight:700;font-size:1.5rem;">Stay updated</h3>
+        <form class="newsletter-form" id="newsletter-form-1" onsubmit="return handleNewsletter(event, this)">
+          <div style="display:flex;flex-direction:column;gap:.5rem;">
+            <label>first name*</label>
+            <input type="text" name="firstName" required>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:.5rem;">
+            <label>email*</label>
+            <input type="email" name="email" required>
+          </div>
+          <button type="submit">join the mailing list</button>
+        </form>
+      </div>
     </div>
   </div>
 
@@ -435,29 +416,6 @@
           <div class="legend-item"><div class="legend-swatch" style="background:#16a34a"></div> 60%+ Good</div>
           <div class="legend-item"><div class="legend-swatch" style="background:#d1d5db"></div> No data</div>
         </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- ════════════════════════════════════════════ NEWSLETTER 3 ════════════════════════════════════════════ -->
-  <div class="section" style="padding-top:2rem;padding-bottom:4rem;">
-    <div style="display:flex;flex-direction:column;align-items:center;gap:2rem;">
-      <div style="text-align:center;">
-        <h2 class="font-octarine" style="font-weight:700;font-size:2rem;margin-bottom:1rem;">stay informed</h2>
-        <p style="font-size:1.125rem;font-weight:300;">get updates on fly-tipping and our other campaigns</p>
-      </div>
-      <div style="max-width:28rem;width:100%;">
-        <form class="newsletter-form" id="newsletter-form-3" onsubmit="return handleNewsletter(event, this)">
-          <div style="display:flex;flex-direction:column;gap:.5rem;">
-            <label>first name*</label>
-            <input type="text" name="firstName" required>
-          </div>
-          <div style="display:flex;flex-direction:column;gap:.5rem;">
-            <label>email*</label>
-            <input type="email" name="email" required>
-          </div>
-          <button type="submit">join the mailing list</button>
-        </form>
       </div>
     </div>
   </div>
@@ -504,8 +462,8 @@
     // DATA SOURCE
     // Replace this empty array with your spreadsheet data.
     // Each object should have these fields:
-    //   authority, code, totalCases, unresolvedCases,
-    //   penaltyRate, prosecutionRate
+    //   authority, code, totalCases,
+    //   penaltyRate, fpnToIncidents
     //
     // Example:
     //   { authority: "Croydon", code: "E09000008", totalCases: 35470,
@@ -535,9 +493,8 @@
             authority: obj['authority'] || obj['Local Authority'] || obj['la_name'] || '',
             code: obj['code'] || obj['la_code'] || obj['ONS Code'] || '',
             totalCases: parseFloat(obj['totalCases'] || obj['total_cases'] || obj['Total Incidents'] || 0),
-            unresolvedCases: parseFloat(obj['unresolvedCases'] || obj['unresolved_cases'] || obj['Unresolved'] || 0),
             penaltyRate: parseFloat(obj['penaltyRate'] || obj['penalty_rate'] || obj['FPN Rate'] || 0),
-            prosecutionRate: parseFloat(obj['prosecutionRate'] || obj['prosecution_rate'] || obj['Prosecution Rate'] || 0),
+            fpnToIncidents: parseFloat(obj['fpnToIncidents'] || obj['fpn_to_incidents'] || obj['% FPNs to Incidents'] || 0),
           };
         }).filter(d => d.authority);
         initDashboard();
@@ -547,7 +504,7 @@
     }
 
     // ── State ──
-    let currentSort = { key: 'unresolvedCases', dir: 'desc' };
+    let currentSort = { key: 'totalCases', dir: 'desc' };
     let pageSize = 20;
     let currentPage = 1;
     let searchTerm = '';
@@ -557,30 +514,13 @@
       return n.toLocaleString('en-GB');
     }
 
-    function getRating(value, type) {
-      if (type === 'penalty') {
-        if (value <= 5) return { label: 'Disgraceful', color: '#7f1d1d' };
-        if (value <= 10) return { label: 'Very Poor', color: '#dc2626' };
-        if (value <= 20) return { label: 'Poor', color: '#f97316' };
-        if (value <= 40) return { label: 'Below Average', color: '#eab308' };
-        if (value <= 60) return { label: 'Average', color: '#3b82f6' };
-        return { label: 'Good', color: '#16a34a' };
-      }
-      // prosecution
-      if (value <= 0.05) return { label: 'Disgraceful', color: '#7f1d1d' };
-      if (value <= 0.2) return { label: 'Very Poor', color: '#dc2626' };
-      if (value <= 0.5) return { label: 'Poor', color: '#f97316' };
-      if (value <= 1) return { label: 'Below Average', color: '#eab308' };
-      if (value <= 3) return { label: 'Average', color: '#3b82f6' };
+    function getRating(value) {
+      if (value <= 5) return { label: 'Disgraceful', color: '#7f1d1d' };
+      if (value <= 10) return { label: 'Very Poor', color: '#dc2626' };
+      if (value <= 20) return { label: 'Poor', color: '#f97316' };
+      if (value <= 40) return { label: 'Below Average', color: '#eab308' };
+      if (value <= 60) return { label: 'Average', color: '#3b82f6' };
       return { label: 'Good', color: '#16a34a' };
-    }
-
-    function getUnresolvedColor(total, unresolved) {
-      const pct = total > 0 ? (unresolved / total) * 100 : 0;
-      if (pct >= 80) return '#dc2626';
-      if (pct >= 60) return '#f97316';
-      if (pct >= 40) return '#eab308';
-      return '#16a34a';
     }
 
     // ── Sort ──
@@ -644,9 +584,8 @@
 
       let html = '';
       visible.forEach(d => {
-        const penaltyRating = getRating(d.penaltyRate, 'penalty');
-        const prosecutionRating = getRating(d.prosecutionRate, 'prosecution');
-        const unresolvedColor = getUnresolvedColor(d.totalCases, d.unresolvedCases);
+        const penaltyRating = getRating(d.penaltyRate);
+        const fpnRating = getRating(d.fpnToIncidents);
 
         html += `
           <div class="table-row">
@@ -665,20 +604,14 @@
             </div>
             <div>
               <div>
-                <div class="stat-value" style="color:${unresolvedColor}">${formatNumber(d.unresolvedCases)}</div>
-                <div class="stat-label">unresolved</div>
-              </div>
-            </div>
-            <div>
-              <div>
                 <div class="stat-value" style="color:${penaltyRating.color}">${d.penaltyRate.toFixed(1)}%</div>
                 <div class="stat-label">${penaltyRating.label}</div>
               </div>
             </div>
             <div>
               <div>
-                <div class="stat-value" style="color:${prosecutionRating.color}">${d.prosecutionRate.toFixed(2)}%</div>
-                <div class="stat-label">${prosecutionRating.label}</div>
+                <div class="stat-value" style="color:${fpnRating.color}">${d.fpnToIncidents.toFixed(1)}%</div>
+                <div class="stat-label">${fpnRating.label}</div>
               </div>
             </div>
           </div>`;
@@ -691,7 +624,7 @@
       footer.querySelector('button').style.display = visible.length < sorted.length ? 'inline-block' : 'none';
 
       // Update sort arrows
-      ['authority','totalCases','unresolvedCases','penaltyRate','prosecutionRate'].forEach(k => {
+      ['authority','totalCases','penaltyRate','fpnToIncidents'].forEach(k => {
         const el = document.getElementById('sort-' + k);
         if (el) {
           if (currentSort.key === k) {
@@ -720,14 +653,14 @@
 
       const totalCases = ALL_DATA.reduce((s, d) => s + d.totalCases, 0);
       const avgPenalty = ALL_DATA.reduce((s, d) => s + d.penaltyRate, 0) / ALL_DATA.length;
-      const avgProsecution = ALL_DATA.reduce((s, d) => s + d.prosecutionRate, 0) / ALL_DATA.length;
+      const avgFpnToInc = ALL_DATA.reduce((s, d) => s + d.fpnToIncidents, 0) / ALL_DATA.length;
       const poorCount = ALL_DATA.filter(d => d.penaltyRate < 25).length;
       const poorPct = Math.round((poorCount / ALL_DATA.length) * 100);
 
       document.getElementById('stat-poor').textContent = poorPct + '% of Councils';
       document.getElementById('stat-avg-resolution').textContent = Math.round(avgPenalty) + '%';
       document.getElementById('stat-total-cases').textContent = formatNumber(totalCases);
-      document.getElementById('stat-avg-prosecution').textContent = avgProsecution.toFixed(2) + '%';
+      document.getElementById('stat-avg-fpn').textContent = avgFpnToInc.toFixed(2) + '%';
     }
 
     // ── Newsletter (Zapier) ──
@@ -803,10 +736,9 @@
                 const d = dataMap[code];
                 if (d) {
                   f.properties.totalCases = d.totalCases;
-                  f.properties.unresolvedCases = d.unresolvedCases;
                   f.properties.penaltyRate = d.penaltyRate;
-                  f.properties.prosecutionRate = d.prosecutionRate;
-                  f.properties.solveRate = d.penaltyRate + d.prosecutionRate;
+                  f.properties.fpnToIncidents = d.fpnToIncidents;
+                  f.properties.solveRate = d.penaltyRate;
                   f.properties.hasData = true;
                 } else {
                   f.properties.hasData = false;
@@ -896,9 +828,8 @@
               if (props.hasData === true || props.hasData === 'true') {
                 content += `<div class="stats">
                   <div><strong>Total Cases:</strong> ${formatNumber(props.totalCases)}</div>
-                  <div><strong>Unresolved:</strong> ${formatNumber(props.unresolvedCases)}</div>
                   <div><strong>Penalty Rate:</strong> ${parseFloat(props.penaltyRate).toFixed(1)}%</div>
-                  <div><strong>Prosecution Rate:</strong> ${parseFloat(props.prosecutionRate).toFixed(2)}%</div>
+                  <div><strong>% FPNs to Incidents:</strong> ${parseFloat(props.fpnToIncidents).toFixed(1)}%</div>
                 </div>`;
               } else {
                 content += `<div class="stats"><div style="color:#6b7280;">No data available yet</div></div>`;
