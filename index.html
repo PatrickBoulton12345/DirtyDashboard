@@ -229,7 +229,7 @@
     .map-section .subtitle { font-size: 1.125rem; margin-bottom: .5rem; }
     .map-section .click-hint { font-weight: 700; font-size: .875rem; }
     @media (min-width: 768px) { .map-section .click-hint { font-size: 1rem; } }
-    #map-container { width: 100%; min-height: 500px; border-radius: .5rem; overflow: hidden; border: 2px solid #e5e7eb; margin-top: 1rem; position: relative; }
+    #map-container { width: 100%; min-height: 500px; border-radius: 16px; overflow: hidden; border: 3px solid #000; margin-top: 1rem; position: relative; background: #79CAC4; }
     .map-placeholder {
       display: flex; align-items: center; justify-content: center; min-height: 500px;
       background: #f1f5f9; color: #64748b; font-size: 1.125rem; font-weight: 500;
@@ -414,7 +414,7 @@
           <div class="legend-item"><div class="legend-swatch" style="background:#eab308"></div> 20-40% Below Average</div>
           <div class="legend-item"><div class="legend-swatch" style="background:#3b82f6"></div> 40-60% Average</div>
           <div class="legend-item"><div class="legend-swatch" style="background:#16a34a"></div> 60%+ Good</div>
-          <div class="legend-item"><div class="legend-swatch" style="background:#d1d5db"></div> No data</div>
+          <div class="legend-item"><div class="legend-swatch" style="background:#EBE3D0"></div> No data</div>
         </div>
       </div>
     </div>
@@ -593,7 +593,6 @@
             <div class="col-name">
               <div>
                 <div class="authority-name">${d.authority}</div>
-                <div class="authority-code">${d.code}</div>
               </div>
             </div>
             <div class="col-total">
@@ -700,20 +699,11 @@
         container: 'map',
         style: {
           version: 8,
-          sources: {
-            'osm-tiles': {
-              type: 'raster',
-              tiles: ['https://tile.openstreetmap.org/{z}/{x}/{y}.png'],
-              tileSize: 256,
-              attribution: '&copy; OpenStreetMap contributors'
-            }
-          },
+          sources: {},
           layers: [{
-            id: 'osm-tiles',
-            type: 'raster',
-            source: 'osm-tiles',
-            minzoom: 0,
-            maxzoom: 19
+            id: 'background',
+            type: 'background',
+            paint: { 'background-color': '#79CAC4' }
           }]
         },
         center: [-1.5, 52.8],
@@ -754,7 +744,7 @@
 
             map.addSource('la-boundaries', { type: 'geojson', data: geojson });
 
-            // Fill layer with color based on solve rate
+            // Fill layer with color based on solve rate (cream when no data)
             map.addLayer({
               id: 'la-fill',
               type: 'fill',
@@ -762,7 +752,7 @@
               paint: {
                 'fill-color': [
                   'case',
-                  ['==', ['get', 'hasData'], false], '#d1d5db',
+                  ['==', ['get', 'hasData'], false], '#EBE3D0',
                   ['<', ['get', 'solveRate'], 5], '#7f1d1d',
                   ['<', ['get', 'solveRate'], 10], '#dc2626',
                   ['<', ['get', 'solveRate'], 20], '#f97316',
@@ -770,29 +760,18 @@
                   ['<', ['get', 'solveRate'], 60], '#3b82f6',
                   '#16a34a'
                 ],
-                'fill-opacity': 0.6
+                'fill-opacity': 1
               }
             });
 
-            // Border layer
+            // Border layer — black like Tax Calculator
             map.addLayer({
               id: 'la-border',
               type: 'line',
               source: 'la-boundaries',
               paint: {
-                'line-color': '#374151',
-                'line-width': 0.5
-              }
-            });
-
-            // Hover effect
-            map.addLayer({
-              id: 'la-hover',
-              type: 'fill',
-              source: 'la-boundaries',
-              paint: {
-                'fill-color': '#000',
-                'fill-opacity': 0
+                'line-color': '#000000',
+                'line-width': 1
               }
             });
 
