@@ -314,6 +314,37 @@
     .footer-social a:hover { color: #d1d5db; }
     .footer-right a { color: #fff; text-decoration: underline; }
 
+    /* ── COOKIE BANNER ── */
+    .cookie-banner {
+      position: fixed; bottom: 0; left: 0; right: 0; z-index: 200;
+      background: var(--brand-milky-white); padding: .5rem;
+      box-shadow: 0 -4px 20px rgba(0,0,0,.15);
+    }
+    .cookie-banner-inner {
+      background: var(--brand-flashy-orange); border-radius: .75rem;
+      padding: 1rem 1.5rem; display: flex; align-items: center;
+      justify-content: space-between; gap: 1.5rem;
+      max-width: 1400px; margin: 0 auto;
+    }
+    .cookie-banner-text {
+      color: #fff; font-size: .95rem; font-weight: 500; line-height: 1.4;
+    }
+    .cookie-banner-text a { color: #1e40af; text-decoration: underline; }
+    .cookie-banner-text a:hover { color: #1e3a8a; }
+    .cookie-banner-buttons { display: flex; gap: .75rem; flex-shrink: 0; }
+    .cookie-btn {
+      padding: .6rem 1.5rem; border: 2px solid #000; border-radius: .5rem;
+      font-family: 'Octarine', sans-serif; font-weight: 700; font-size: .9rem;
+      cursor: pointer; transition: opacity .2s;
+    }
+    .cookie-btn:hover { opacity: .9; }
+    .cookie-btn-accept { background: #2d6a4f; color: #fff; }
+    .cookie-btn-decline { background: #c1444b; color: #fff; }
+    @media (max-width: 600px) {
+      .cookie-banner-inner { flex-direction: column; text-align: center; gap: 1rem; }
+      .cookie-banner-text { font-size: .85rem; }
+    }
+
     /* ── SORT ARROWS ── */
     .sort-icon { width: 16px; height: 16px; margin-left: 4px; flex-shrink: 0; }
 
@@ -980,6 +1011,32 @@
         }
       }
     });
+  </script>
+
+  <!-- Cookie Banner -->
+  <div class="cookie-banner" id="cookie-banner" style="display:none;">
+    <div class="cookie-banner-inner">
+      <p class="cookie-banner-text">We use cookies to improve your experience on our site. By using our site, you agree to our <a href="https://lookingforgrowth.uk/cookie-policy" target="_blank" rel="noopener noreferrer">Cookie Policy</a>.</p>
+      <div class="cookie-banner-buttons">
+        <button class="cookie-btn cookie-btn-accept" onclick="acceptCookies()">Accept</button>
+        <button class="cookie-btn cookie-btn-decline" onclick="declineCookies()">Decline</button>
+      </div>
+    </div>
+  </div>
+  <script>
+    (function() {
+      if (!localStorage.getItem('cookie-consent')) {
+        document.getElementById('cookie-banner').style.display = 'block';
+      }
+    })();
+    function acceptCookies() {
+      localStorage.setItem('cookie-consent', 'accepted');
+      document.getElementById('cookie-banner').style.display = 'none';
+    }
+    function declineCookies() {
+      localStorage.setItem('cookie-consent', 'declined');
+      document.getElementById('cookie-banner').style.display = 'none';
+    }
   </script>
 
 </body>
