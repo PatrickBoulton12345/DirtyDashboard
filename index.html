@@ -817,27 +817,26 @@
 
     }
 
-    // ── Newsletter (Zapier) ──
+    // ── Newsletter (Brevo via Zapier) ──
     function handleNewsletter(e, form) {
       e.preventDefault();
-      const firstName = form.querySelector('input[name="firstName"]').value;
+      const name = form.querySelector('input[name="firstName"]').value;
       const email = form.querySelector('input[name="email"]').value;
 
-      // TODO: Replace with your Zapier webhook URL
-      const WEBHOOK_URL = '';
+      const payload = new URLSearchParams({
+        'Name': name,
+        'Email': email,
+        'List ID(s)': '119'
+      });
 
-      if (!WEBHOOK_URL) {
-        alert('Newsletter signup coming soon!');
-        return false;
-      }
-
-      fetch(WEBHOOK_URL, {
+      fetch('https://hooks.zapier.com/hooks/catch/24440311/ursog2a/', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ firstName, email, listId: 119 })
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: payload.toString()
       })
-      .then(() => {
-        form.innerHTML = '<p style="text-align:center;font-weight:700;color:#16a34a;padding:1rem;">Thanks for signing up! 🎉</p>';
+      .then(res => {
+        if (!res.ok) throw new Error('Failed');
+        form.innerHTML = '<p style="text-align:center;font-weight:700;color:#16a34a;padding:1rem;">Thanks for signing up!</p>';
       })
       .catch(() => {
         alert('Something went wrong. Please try again.');
