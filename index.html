@@ -173,11 +173,11 @@
     }
     .table-header {
       background: var(--brand-ocean-blue); color: #fff; font-family: 'Octarine', sans-serif; font-weight: 700;
-      display: grid; grid-template-columns: 1fr 5fr 3fr 3fr; gap: 1rem; padding: 1rem;
-      font-size: .875rem; min-width: 500px;
+      display: grid; grid-template-columns: 1fr 5fr 3fr; gap: 1rem; padding: 1rem;
+      font-size: .875rem; min-width: 400px;
     }
     @media (min-width: 768px) {
-      .table-header { grid-template-columns: 1fr 5fr 2fr 3fr 3fr; font-size: 1rem; }
+      .table-header { grid-template-columns: 1fr 5fr 2fr 3fr; font-size: 1rem; }
     }
     .table-header > div { display: flex; align-items: center; justify-content: center; cursor: pointer; border-radius: .25rem; padding: .25rem .5rem; text-align: center; }
     .table-header > div:hover { background: rgba(255,255,255,.15); }
@@ -186,11 +186,11 @@
     @media (min-width: 768px) { .table-header .col-total { display: flex; } }
 
     .table-row {
-      display: grid; grid-template-columns: 1fr 5fr 3fr 3fr; gap: 1rem; padding: 1rem;
-      border-bottom: 1px solid #e5e7eb; transition: background .2s; min-width: 500px;
+      display: grid; grid-template-columns: 1fr 5fr 3fr; gap: 1rem; padding: 1rem;
+      border-bottom: 1px solid #e5e7eb; transition: background .2s; min-width: 400px;
     }
     @media (min-width: 768px) {
-      .table-row { grid-template-columns: 1fr 5fr 2fr 3fr 3fr; }
+      .table-row { grid-template-columns: 1fr 5fr 2fr 3fr; }
     }
     .table-row:hover { background: #f9fafb; }
     .table-row > div { display: flex; align-items: center; justify-content: center; text-align: center; }
@@ -220,6 +220,32 @@
       margin-bottom: 1rem;
     }
     .search-input:focus { border-color: var(--brand-ocean-blue); }
+
+    /* ── SEARCH PREVIEW ── */
+    .search-preview {
+      display: flex; flex-direction: column; gap: .5rem;
+    }
+    .search-preview-item {
+      background: #fff; border: 2px solid #e5e7eb; border-radius: .75rem;
+      padding: 1rem 1.25rem; display: flex; justify-content: space-between; align-items: center;
+      cursor: pointer; transition: border-color .2s, box-shadow .2s;
+    }
+    .search-preview-item:hover { border-color: var(--brand-ocean-blue); box-shadow: 0 2px 8px rgba(0,0,0,.08); }
+    .search-preview-name { font-weight: 700; color: #111827; }
+    .search-preview-stat { font-weight: 700; font-size: .875rem; }
+    .search-preview-label { font-size: .75rem; color: #6b7280; }
+
+    /* ── TABLE TOGGLE ── */
+    .table-toggle-btn {
+      display: flex; align-items: center; justify-content: center; gap: .5rem;
+      margin: 0 auto; padding: .625rem 1.5rem;
+      background: var(--brand-ocean-blue); color: #fff; border: 2px solid #000;
+      border-radius: .5rem; font-family: 'Octarine', sans-serif; font-weight: 700;
+      font-size: .9rem; cursor: pointer; transition: opacity .2s;
+    }
+    .table-toggle-btn:hover { opacity: .9; }
+    .table-toggle-btn.open svg { transform: rotate(180deg); }
+    .table-toggle-btn svg { transition: transform .25s ease; }
 
     /* ── STATS CARDS ── */
     .stats-grid { display: grid; grid-template-columns: 1fr; gap: 1rem; margin-top: 1.5rem; }
@@ -350,18 +376,24 @@
   <div class="section">
     <div style="display:flex;flex-direction:column;gap:2.5rem;">
       <h2 class="font-octarine" style="font-weight:700;font-size:2rem;text-align:center;">fly-tipping league table</h2>
-      <p style="text-align:center;font-size:1.125rem;font-weight:300;line-height:1.7;">Top 20 local authorities by investigation success</p>
-
       <!-- Search -->
       <input type="text" class="search-input" id="search-input" placeholder="Search for your local authority..." oninput="handleSearch(this.value)">
 
-      <!-- Table -->
-      <div class="league-table-wrapper">
+      <!-- Search Preview (shown when searching and table collapsed) -->
+      <div id="search-preview" class="search-preview" style="display:none;"></div>
+
+      <!-- Toggle Button -->
+      <button class="table-toggle-btn" id="table-toggle-btn" onclick="toggleTable()">
+        <span id="toggle-label">View full table</span>
+        <svg id="toggle-chevron" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>
+      </button>
+
+      <!-- Table (collapsed by default) -->
+      <div class="league-table-wrapper" id="table-wrapper" style="display:none;">
         <div class="table-header" id="table-header">
           <div onclick="sortTable('rank')">#</div>
           <div class="col-name" onclick="sortTable('authority')"><span>Local Authority</span><span class="sort-icon" id="sort-authority"></span></div>
           <div class="col-total" onclick="sortTable('totalCases')"><span>Total Cases</span><span class="sort-icon" id="sort-totalCases"></span></div>
-          <div onclick="sortTable('penaltyRate')"><span>Penalty Rate (FPNs)</span><span class="sort-icon" id="sort-penaltyRate"></span></div>
           <div onclick="sortTable('fpnToIncidents')"><span>% of FPNs<br>to Incidents</span><span class="sort-icon" id="sort-fpnToIncidents"></span></div>
         </div>
         <div id="table-body">
@@ -606,7 +638,6 @@
 
       let html = '';
       visible.forEach(d => {
-        const penaltyRating = getRating(d.penaltyRate);
         const fpnRating = getRating(d.fpnToIncidents);
 
         html += `
@@ -625,12 +656,6 @@
             </div>
             <div>
               <div>
-                <div class="stat-value" style="color:${penaltyRating.color}">${d.penaltyRate.toFixed(1)}%</div>
-                <div class="stat-label">${penaltyRating.label}</div>
-              </div>
-            </div>
-            <div>
-              <div>
                 <div class="stat-value" style="color:${fpnRating.color}">${d.fpnToIncidents.toFixed(1)}%</div>
                 <div class="stat-label">${fpnRating.label}</div>
               </div>
@@ -645,7 +670,7 @@
       footer.querySelector('button').style.display = visible.length < sorted.length ? 'inline-block' : 'none';
 
       // Update sort arrows
-      ['authority','totalCases','penaltyRate','fpnToIncidents'].forEach(k => {
+      ['authority','totalCases','fpnToIncidents'].forEach(k => {
         const el = document.getElementById('sort-' + k);
         if (el) {
           if (currentSort.key === k) {
@@ -662,10 +687,66 @@
       renderTable();
     }
 
+    let tableExpanded = false;
+
+    function toggleTable() {
+      tableExpanded = !tableExpanded;
+      const wrapper = document.getElementById('table-wrapper');
+      const btn = document.getElementById('table-toggle-btn');
+      const label = document.getElementById('toggle-label');
+      const preview = document.getElementById('search-preview');
+      wrapper.style.display = tableExpanded ? 'block' : 'none';
+      btn.classList.toggle('open', tableExpanded);
+      label.textContent = tableExpanded ? 'Hide table' : 'View full table';
+      if (tableExpanded) { preview.style.display = 'none'; }
+    }
+
+    function renderSearchPreview() {
+      const preview = document.getElementById('search-preview');
+      if (!searchTerm || tableExpanded || ALL_DATA.length === 0) {
+        preview.style.display = 'none';
+        return;
+      }
+      const q = searchTerm.toLowerCase();
+      const matches = ALL_DATA.filter(d => d.authority.toLowerCase().includes(q)).slice(0, 5);
+      if (matches.length === 0) {
+        preview.style.display = 'block';
+        preview.innerHTML = '<div style="text-align:center;color:#6b7280;padding:1rem;">No matching local authorities found</div>';
+        return;
+      }
+      preview.style.display = 'flex';
+      preview.innerHTML = matches.map(d => {
+        const rating = getRating(d.fpnToIncidents);
+        return `<div class="search-preview-item" onclick="expandToResult('${d.authority.replace(/'/g, "\\'")}')">
+          <div>
+            <div class="search-preview-name">${d.authority}</div>
+            <div class="search-preview-label">${formatNumber(d.totalCases)} total cases</div>
+          </div>
+          <div style="text-align:right;">
+            <div class="search-preview-stat" style="color:${rating.color}">${d.fpnToIncidents.toFixed(1)}%</div>
+            <div class="search-preview-label">FPNs to incidents</div>
+          </div>
+        </div>`;
+      }).join('');
+    }
+
+    function expandToResult(name) {
+      document.getElementById('search-input').value = name;
+      searchTerm = name;
+      currentPage = 1;
+      tableExpanded = true;
+      document.getElementById('table-wrapper').style.display = 'block';
+      document.getElementById('table-toggle-btn').classList.add('open');
+      document.getElementById('toggle-label').textContent = 'Hide table';
+      document.getElementById('search-preview').style.display = 'none';
+      renderTable();
+    }
+
     function handleSearch(value) {
       searchTerm = value;
       currentPage = 1;
-      renderTable();
+      renderSearchPreview();
+      if (tableExpanded) { renderTable(); }
     }
 
     // ── Stats ──
@@ -828,7 +909,6 @@
               if (props.hasData === true || props.hasData === 'true') {
                 content += `<div class="stats">
                   <div><strong>Total Cases:</strong> ${formatNumber(props.totalCases)}</div>
-                  <div><strong>Penalty Rate:</strong> ${parseFloat(props.penaltyRate).toFixed(1)}%</div>
                   <div><strong>% FPNs to Incidents:</strong> ${parseFloat(props.fpnToIncidents).toFixed(1)}%</div>
                 </div>`;
               } else {
