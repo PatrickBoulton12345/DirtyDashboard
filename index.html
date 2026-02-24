@@ -458,8 +458,7 @@
           <div class="legend-item"><div class="legend-swatch" style="background:#dc2626"></div> 5-10% Very Poor</div>
           <div class="legend-item"><div class="legend-swatch" style="background:#f97316"></div> 10-20% Poor</div>
           <div class="legend-item"><div class="legend-swatch" style="background:#eab308"></div> 20-40% Below Average</div>
-          <div class="legend-item"><div class="legend-swatch" style="background:#3b82f6"></div> 40-60% Average</div>
-          <div class="legend-item"><div class="legend-swatch" style="background:#16a34a"></div> 60%+ Good</div>
+          <div class="legend-item"><div class="legend-swatch" style="background:#16a34a"></div> 40%+ Excellent</div>
           <div class="legend-item"><div class="legend-swatch" style="background:#EBE3D0"></div> No data</div>
         </div>
       </div>
@@ -573,8 +572,7 @@
       if (value <= 10) return { label: 'Very Poor', color: '#dc2626' };
       if (value <= 20) return { label: 'Poor', color: '#f97316' };
       if (value <= 40) return { label: 'Below Average', color: '#eab308' };
-      if (value <= 60) return { label: 'Average', color: '#3b82f6' };
-      return { label: 'Good', color: '#16a34a' };
+      return { label: 'Excellent', color: '#16a34a' };
     }
 
     // ── Sort ──
@@ -752,16 +750,7 @@
     // ── Stats ──
     function updateStats() {
       if (ALL_DATA.length === 0) return;
-
-      const totalCases = ALL_DATA.reduce((s, d) => s + d.totalCases, 0);
-      const avgPenalty = ALL_DATA.reduce((s, d) => s + d.penaltyRate, 0) / ALL_DATA.length;
       const avgFpnToInc = ALL_DATA.reduce((s, d) => s + d.fpnToIncidents, 0) / ALL_DATA.length;
-      const poorCount = ALL_DATA.filter(d => d.penaltyRate < 25).length;
-      const poorPct = Math.round((poorCount / ALL_DATA.length) * 100);
-
-      document.getElementById('stat-poor').textContent = poorPct + '% of Councils';
-      document.getElementById('stat-avg-resolution').textContent = Math.round(avgPenalty) + '%';
-      document.getElementById('stat-total-cases').textContent = formatNumber(totalCases);
       document.getElementById('stat-avg-fpn').textContent = avgFpnToInc.toFixed(2) + '%';
     }
 
@@ -829,9 +818,8 @@
                 const d = dataMap[code];
                 if (d) {
                   f.properties.totalCases = d.totalCases;
-                  f.properties.penaltyRate = d.penaltyRate;
                   f.properties.fpnToIncidents = d.fpnToIncidents;
-                  f.properties.solveRate = d.penaltyRate;
+                  f.properties.solveRate = d.fpnToIncidents;
                   f.properties.hasData = true;
                 } else {
                   f.properties.hasData = false;
@@ -860,7 +848,6 @@
                   ['<', ['get', 'solveRate'], 10], '#dc2626',
                   ['<', ['get', 'solveRate'], 20], '#f97316',
                   ['<', ['get', 'solveRate'], 40], '#eab308',
-                  ['<', ['get', 'solveRate'], 60], '#3b82f6',
                   '#16a34a'
                 ],
                 'fill-opacity': 1
@@ -953,10 +940,8 @@
             const d = dataMap[code];
             if (d) {
               f.properties.totalCases = d.totalCases;
-              f.properties.unresolvedCases = d.unresolvedCases;
-              f.properties.penaltyRate = d.penaltyRate;
-              f.properties.prosecutionRate = d.prosecutionRate;
-              f.properties.solveRate = d.penaltyRate + d.prosecutionRate;
+              f.properties.fpnToIncidents = d.fpnToIncidents;
+              f.properties.solveRate = d.fpnToIncidents;
               f.properties.hasData = true;
             } else {
               f.properties.hasData = false;
