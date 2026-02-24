@@ -801,8 +801,7 @@
               if (!e.features.length) return;
               const props = e.features[0].properties;
               let content = `<div class="map-popup">
-                <h4>${props.LAD24NM}</h4>
-                <div class="code">${props.LAD24CD}</div>`;
+                <h4>${props.LAD24NM}</h4>`;
 
               if (props.hasData === true || props.hasData === 'true') {
                 content += `<div class="stats">
