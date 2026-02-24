@@ -460,6 +460,11 @@
           <div class="stat-big" style="color:#ea580c;" id="stat-avg-fpn">—</div>
           <div class="stat-desc">Avg % of FPNs to Incidents</div>
         </div>
+        <div class="stat-card">
+          <div class="stat-big" style="color:#7f1d1d;" id="stat-worst-council">—</div>
+          <div class="stat-desc">Worst Council</div>
+          <div style="font-size:.75rem;color:#6b7280;margin-top:.25rem;" id="stat-worst-council-rate"></div>
+        </div>
       </div>
 
       <!-- Methodology -->
@@ -469,6 +474,7 @@
         <p>In the <a href="https://assets.publishing.service.gov.uk/media/67bc9262ff9676313f353489/Flytipping_incidents_and_actions_taken__reported_by_LAs_in_England__2012-13_to_2023-24.ods" target="_blank" rel="noopener noreferrer">official Government statistics</a>, the "resolution rate" is far higher. This is because they class an "investigation" as an action - even if it goes nowhere.</p>
         <p>A Fixed Penalty Notice is a mechanism from the Government to allow someone to avoid prosecution and discharge their liability through paying a fine.</p>
         <p>Anything highlighted in purple is a suspicious value. This could be due to several factors, such as multiple offenders being involved in a single fly-tipping incident, or reporting issues.</p>
+        <p>The 'Worst Council' is the local authority with the lowest ratio of Fixed Penalty Notices issued to fly-tipping incidents reported. This measures how poorly a council is using its enforcement powers relative to the scale of the problem in its area.</p>
       </div>
     </div>
   </div>
@@ -802,6 +808,11 @@
       if (ALL_DATA.length === 0) return;
       const avgFpnToInc = ALL_DATA.reduce((s, d) => s + d.fpnToIncidents, 0) / ALL_DATA.length;
       document.getElementById('stat-avg-fpn').textContent = avgFpnToInc.toFixed(2) + '%';
+
+      // Worst council = lowest FPN to incidents ratio
+      const worst = ALL_DATA.reduce((min, d) => d.fpnToIncidents < min.fpnToIncidents ? d : min, ALL_DATA[0]);
+      document.getElementById('stat-worst-council').textContent = worst.authority;
+      document.getElementById('stat-worst-council-rate').textContent = worst.fpnToIncidents.toFixed(2) + '% FPNs to incidents';
     }
 
     // ── Newsletter (Zapier) ──
