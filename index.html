@@ -465,6 +465,16 @@
           <div class="stat-desc">Worst Council</div>
           <div style="font-size:.75rem;color:#6b7280;margin-top:.25rem;" id="stat-worst-council-rate"></div>
         </div>
+        <div class="stat-card">
+          <div class="stat-big" style="color:#dc2626;" id="stat-most-incidents">—</div>
+          <div class="stat-desc">Most Incidents</div>
+          <div style="font-size:.75rem;color:#6b7280;margin-top:.25rem;" id="stat-most-incidents-count"></div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-big" style="color:#16a34a;" id="stat-least-incidents">—</div>
+          <div class="stat-desc">Least Incidents</div>
+          <div style="font-size:.75rem;color:#6b7280;margin-top:.25rem;" id="stat-least-incidents-count"></div>
+        </div>
       </div>
 
       <!-- Methodology -->
@@ -813,6 +823,16 @@
       const worst = ALL_DATA.reduce((min, d) => d.fpnToIncidents < min.fpnToIncidents ? d : min, ALL_DATA[0]);
       document.getElementById('stat-worst-council').textContent = worst.authority;
       document.getElementById('stat-worst-council-rate').textContent = worst.fpnToIncidents.toFixed(2) + '% FPNs to incidents';
+
+      // Most incidents
+      const most = ALL_DATA.reduce((max, d) => d.totalCases > max.totalCases ? d : max, ALL_DATA[0]);
+      document.getElementById('stat-most-incidents').textContent = most.authority;
+      document.getElementById('stat-most-incidents-count').textContent = formatNumber(most.totalCases) + ' incidents';
+
+      // Least incidents
+      const least = ALL_DATA.reduce((min, d) => d.totalCases < min.totalCases ? d : min, ALL_DATA[0]);
+      document.getElementById('stat-least-incidents').textContent = least.authority;
+      document.getElementById('stat-least-incidents-count').textContent = formatNumber(least.totalCases) + ' incidents';
     }
 
     // ── Newsletter (Zapier) ──
