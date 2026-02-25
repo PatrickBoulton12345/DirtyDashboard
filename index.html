@@ -269,8 +269,8 @@
     .table-toggle-btn svg { transition: transform .25s ease; }
 
     /* ── STATS CARDS ── */
-    .stats-grid { display: grid; grid-template-columns: 1fr; gap: 1rem; margin-top: 1.5rem; max-width: 900px; margin-left: auto; margin-right: auto; }
-    @media (min-width: 768px) { .stats-grid { grid-template-columns: repeat(3, 1fr); } }
+    .stats-grid { display: flex; flex-wrap: wrap; justify-content: center; gap: 1rem; margin-top: 1.5rem; max-width: 900px; margin-left: auto; margin-right: auto; }
+    .stats-grid .stat-card { flex: 0 1 280px; }
     .stat-card {
       background: #fff; padding: 1rem 1.5rem; border-radius: .5rem; border: 2px solid #000;
       box-shadow: 0 4px 10px rgba(0,0,0,.1); text-align: center; min-height: 6rem;
