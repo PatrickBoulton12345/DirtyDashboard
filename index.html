@@ -1,0 +1,1137 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="https://lfg-site-content.s3.eu-west-2.amazonaws.com/lfg+favicon.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="https://lfg-site-content.s3.eu-west-2.amazonaws.com/lfg+favicon.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="https://lfg-site-content.s3.eu-west-2.amazonaws.com/lfg+favicon.png">
+
+  <!-- OpenGraph -->
+  <meta property="og:title" content="Dirty Dashboard - Areas Failing to Manage Fly-Tipping">
+  <meta property="og:description" content="Interactive map and league table tracking the worst areas in the UK for Fly-Tipping">
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="Looking For Growth">
+  <meta property="og:image" content="https://dashboards.lookingforgrowth.uk/og-image.png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+
+  <!-- Twitter -->
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Dirty Dashboard - Areas Failing to Manage Fly-Tipping">
+  <meta name="twitter:description" content="Interactive map and league table tracking the worst areas in the UK for Fly-Tipping">
+  <meta name="twitter:image" content="https://dashboards.lookingforgrowth.uk/og-image.png">
+
+  <title>Dirty Dashboard | Looking For Growth</title>
+
+  <!-- Google Fonts: DM Sans -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,100..1000;1,9..40,100..1000&display=swap" rel="stylesheet">
+
+  <!-- Octarine font (LFG brand) -->
+  <style>
+    @font-face {
+      font-family: 'Octarine';
+      src: url('https://dashboards.lookingforgrowth.uk/_astro/Octarine-Bold.CR4U0q0x.otf') format('opentype');
+      font-weight: 700;
+      font-style: normal;
+    }
+    @font-face {
+      font-family: 'Octarine';
+      src: url('https://dashboards.lookingforgrowth.uk/_astro/Octarine-Light.uRTgbM2i.otf') format('opentype');
+      font-weight: 300;
+      font-style: normal;
+    }
+  </style>
+
+  <!-- Lucide Icons CDN -->
+  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+
+  <!-- MapLibre GL -->
+  <link rel="stylesheet" href="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.css">
+  <script src="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.js"></script>
+
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --brand-ocean-blue: #79CAC4;
+      --brand-milky-white: #F5F0E8;
+      --brand-flashy-orange: #FE5500;
+      --brand-grassy-green: #4CB05A;
+      --brand-royal-purple: #9B59B6;
+      --brand-footer: #283848;
+    }
+
+    body {
+      font-family: 'DM Sans', sans-serif;
+      min-height: 100dvh;
+      display: flex;
+      flex-direction: column;
+      color: #1a1a1a;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    .font-octarine { font-family: 'Octarine', sans-serif; }
+    .font-dm-sans { font-family: 'DM Sans', sans-serif; }
+
+    /* ── NAV ── */
+    .nav-bar {
+      position: sticky; top: 0; z-index: 50;
+      background: var(--brand-ocean-blue);
+      border-bottom: 3px solid #000;
+      display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between;
+      padding: 1rem; min-height: 80px;
+      box-shadow: 0 1px 3px rgba(0,0,0,.1);
+    }
+    .nav-logo { font-family: 'Octarine', sans-serif; font-weight: 700; font-size: 2.25rem; color: #000; text-decoration: none; padding-top: .25rem; }
+    .nav-links { display: flex; flex-wrap: wrap; align-items: center; gap: .5rem; }
+    .nav-links > a { font-weight: 700; font-size: .875rem; padding: .5rem 1rem; border-radius: .5rem; text-decoration: none; color: #000; }
+    .nav-links > a:hover { background: rgba(0,0,0,.08); }
+    .nav-links .donate-btn {
+      background: #FBBF24; border-radius: 9999px; color: #000; font-weight: 700;
+      padding: .5rem 1rem; transition: background .3s;
+    }
+    .nav-links .donate-btn:hover { background: #F59E0B; }
+    @media (max-width: 1023px) {
+      .nav-links > a { display: none; }
+    }
+    @media (min-width: 1024px) {
+      .nav-links-list { display: none; }
+    }
+
+    /* Mobile nav */
+    .nav-hamburger { display: none; background: none; border: none; cursor: pointer; z-index: 60; }
+    .nav-close { display: none; }
+    .nav-mobile-header { display: none; }
+    .nav-mobile-footer { display: none; }
+    @media (max-width: 1023px) {
+      .nav-hamburger { display: block; position: absolute; right: 1rem; top: 50%; transform: translateY(-50%); }
+      .nav-links {
+        position: fixed; top: 0; left: 0; width: 100%; height: 100dvh;
+        background: #fff; z-index: 100;
+        display: flex; flex-direction: column; align-items: stretch;
+        transform: translateX(100%);
+        transition: transform .35s ease;
+      }
+      .nav-links.open { transform: translateX(0); }
+      .nav-mobile-header {
+        display: flex; align-items: center; justify-content: center;
+        background: var(--brand-ocean-blue); padding: 1rem 1.5rem; min-height: 70px;
+        position: relative; flex-shrink: 0;
+      }
+      .nav-mobile-header .nav-mobile-logo {
+        font-family: 'Octarine', sans-serif; font-weight: 700; font-size: 1.75rem; color: #000; text-decoration: none;
+      }
+      .nav-close {
+        display: block; position: absolute; right: 1.25rem; top: 50%; transform: translateY(-50%);
+        background: none; border: none; cursor: pointer; z-index: 101; padding: .25rem;
+      }
+      .nav-links-list {
+        flex: 1; display: flex; flex-direction: column; align-items: flex-start;
+        padding: 1.5rem 1.5rem 1rem; gap: 0; overflow-y: auto;
+      }
+      .nav-links-list a {
+        font-weight: 700; font-size: 1.2rem; padding: .85rem 0; width: 100%;
+        text-decoration: none; color: #000; border-radius: 0;
+      }
+      .nav-links-list a:hover { background: none; opacity: .7; }
+      .nav-links .donate-btn { display: none; }
+      .nav-mobile-footer {
+        display: flex; flex-direction: column; gap: 1rem;
+        background: #f3f4f6; padding: 1.5rem; border-top: 1px solid #e5e7eb; flex-shrink: 0;
+      }
+      .nav-mobile-footer a {
+        font-weight: 700; font-size: 1.1rem; color: #000; text-decoration: underline;
+        text-underline-offset: 3px;
+      }
+      .nav-overlay { display: none; }
+    }
+
+    /* ── HERO ── */
+    .hero {
+      background: var(--brand-milky-white);
+      border-bottom: 2px solid #000;
+      display: flex; align-items: center; justify-content: center;
+      padding: 3rem 1.5rem; min-height: 40vh;
+    }
+    .hero h1 { text-align: center; font-family: 'Octarine', sans-serif; font-weight: 800; font-size: 2rem; text-transform: uppercase; }
+    @media (min-width: 768px) { .hero h1 { font-size: 3rem; } }
+
+    /* ── SECTIONS ── */
+    .section { max-width: 64rem; width: 100%; margin: 0 auto; padding: 2rem 2rem; }
+    .section.wide { max-width: 72rem; }
+    .section-intro { display: flex; flex-direction: column; gap: 2.5rem; text-align: center; margin-top: 2.5rem; padding-bottom: 4rem; }
+    .section-intro h2 { font-family: 'Octarine', sans-serif; font-weight: 700; font-size: 2rem; }
+    @media (min-width: 768px) { .section-intro h2 { font-size: 2.25rem; } }
+    .section-intro .desc { display: flex; flex-direction: column; gap: 2rem; font-size: 1.125rem; font-weight: 300; line-height: 1.7; }
+    @media (min-width: 768px) { .section-intro .desc { font-size: 1.5rem; } }
+
+    /* ── NEWSLETTER FORM ── */
+    .newsletter-form {
+      background: #fff; border-radius: .75rem; padding: 2rem; display: flex; flex-direction: column; gap: 1.25rem;
+      box-shadow: 0 10px 25px rgba(0,0,0,.1); border: 2px solid #000; max-width: 28rem; width: 100%; margin: 0 auto;
+    }
+    .newsletter-form label { font-size: .875rem; font-weight: 500; }
+    .newsletter-form input[type="text"],
+    .newsletter-form input[type="email"] {
+      width: 100%; height: 3rem; border: 2px solid #000; border-radius: .75rem;
+      padding: .5rem .75rem; font-size: 1rem; outline: none; transition: border-color .2s, box-shadow .2s;
+      background: #EBE3D0;
+    }
+    .newsletter-form input:focus { border-color: var(--brand-ocean-blue); box-shadow: 0 0 0 3px rgba(121,202,196,.3); }
+    .newsletter-form button {
+      background: #000; color: #fff; font-weight: 700; padding: .625rem 1.5rem; border-radius: 8px; border: none; cursor: pointer;
+      border-top: 2px solid var(--brand-flashy-orange);
+      border-bottom: 6px solid var(--brand-flashy-orange);
+      border-left: 2px solid var(--brand-flashy-orange);
+      border-right: 6px solid var(--brand-flashy-orange);
+      transition: all .2s;
+    }
+    .newsletter-form button:hover { background: var(--brand-flashy-orange); color: #000; border-color: #000; }
+
+    /* ── LEAGUE TABLE ── */
+    .league-table-wrapper {
+      background: #fff; border-radius: .75rem; border: 2px solid #000;
+      box-shadow: 0 10px 25px rgba(0,0,0,.1); overflow-x: auto; -webkit-overflow-scrolling: touch;
+    }
+    .table-header {
+      background: var(--brand-ocean-blue); color: #fff; font-family: 'Octarine', sans-serif; font-weight: 700;
+      display: grid; grid-template-columns: 1fr 5fr 3fr; gap: 1rem; padding: 1rem;
+      font-size: .875rem; min-width: 400px;
+    }
+    @media (min-width: 768px) {
+      .table-header { grid-template-columns: 1fr 5fr 2fr 3fr; font-size: 1rem; }
+    }
+    .table-header > div { display: flex; align-items: center; justify-content: center; cursor: pointer; border-radius: .25rem; padding: .25rem .5rem; text-align: center; }
+    .table-header > div:hover { background: rgba(255,255,255,.15); }
+    .table-header .col-name { justify-content: flex-start; }
+    .table-header .col-total { display: none; }
+    @media (min-width: 768px) { .table-header .col-total { display: flex; } }
+
+    .table-row {
+      display: grid; grid-template-columns: 1fr 5fr 3fr; gap: 1rem; padding: 1rem;
+      border-bottom: 1px solid #e5e7eb; transition: background .2s; min-width: 400px;
+    }
+    @media (min-width: 768px) {
+      .table-row { grid-template-columns: 1fr 5fr 2fr 3fr; }
+    }
+    .table-row:hover { background: #f9fafb; }
+    .table-row > div { display: flex; align-items: center; justify-content: center; text-align: center; }
+    .table-row .col-name { justify-content: flex-start; }
+    .table-row .col-total { display: none; }
+    @media (min-width: 768px) { .table-row .col-total { display: flex; } }
+
+    .table-row .rank { font-weight: 700; }
+    .table-row .authority-name { font-weight: 600; color: #111827; }
+    .table-row .authority-code { font-size: .75rem; color: #6b7280; }
+    .table-row .stat-value { font-weight: 700; }
+    .table-row .stat-label { font-size: .625rem; color: #6b7280; }
+    @media (min-width: 768px) { .table-row .stat-label { font-size: .75rem; } }
+
+    .table-footer { background: #f9fafb; padding: 1rem; text-align: center; font-size: .875rem; color: #4b5563; border-top: 1px solid #e5e7eb; min-width: 500px; }
+    .table-footer button {
+      margin-top: .5rem; padding: .5rem 1rem; background: var(--brand-ocean-blue); color: #fff;
+      border: none; border-radius: .5rem; cursor: pointer; font-family: 'DM Sans', sans-serif; font-weight: 600;
+      transition: opacity .2s;
+    }
+    .table-footer button:hover { opacity: .9; }
+
+    /* ── SEARCH ── */
+    .search-input {
+      width: 100%; padding: .75rem 1rem; border: 2px solid #d1d5db; border-radius: .5rem;
+      font-family: 'DM Sans', sans-serif; font-size: 1rem; outline: none; transition: border-color .2s;
+      margin-bottom: 1rem;
+    }
+    .search-input:focus { border-color: var(--brand-ocean-blue); }
+
+    /* ── SEARCH PREVIEW ── */
+    .search-preview {
+      display: flex; flex-direction: column; gap: .5rem;
+    }
+    .search-preview-item {
+      background: #fff; border: 2px solid #e5e7eb; border-radius: .75rem;
+      padding: 1rem 1.25rem; display: flex; justify-content: space-between; align-items: center;
+      cursor: pointer; transition: border-color .2s, box-shadow .2s;
+    }
+    .search-preview-item:hover { border-color: var(--brand-ocean-blue); box-shadow: 0 2px 8px rgba(0,0,0,.08); }
+    .search-preview-name { font-weight: 700; color: #111827; }
+    .search-preview-stat { font-weight: 700; font-size: .875rem; }
+    .search-preview-label { font-size: .75rem; color: #6b7280; }
+
+    /* ── TABLE TOGGLE ── */
+    .table-toggle-btn {
+      display: flex; align-items: center; justify-content: center; gap: .5rem;
+      margin: 0 auto; padding: .625rem 1.5rem;
+      background: var(--brand-ocean-blue); color: #fff; border: 2px solid #000;
+      border-radius: .5rem; font-family: 'Octarine', sans-serif; font-weight: 700;
+      font-size: .9rem; cursor: pointer; transition: opacity .2s;
+    }
+    .table-toggle-btn:hover { opacity: .9; }
+    .table-toggle-btn.open svg { transform: rotate(180deg); }
+    .table-toggle-btn svg { transition: transform .25s ease; }
+
+    /* ── STATS CARDS ── */
+    .stats-grid { display: grid; grid-template-columns: 1fr; gap: 1rem; margin-top: 1.5rem; max-width: 900px; margin-left: auto; margin-right: auto; }
+    @media (min-width: 768px) { .stats-grid { grid-template-columns: repeat(3, 1fr); } }
+    .stat-card {
+      background: #fff; padding: 1rem 1.5rem; border-radius: .5rem; border: 2px solid #000;
+      box-shadow: 0 4px 10px rgba(0,0,0,.1); text-align: center; min-height: 6rem;
+      display: flex; flex-direction: column; justify-content: center;
+    }
+    .stat-card .stat-big { font-family: 'Octarine', sans-serif; font-weight: 700; font-size: 1.25rem; }
+    @media (min-width: 1024px) { .stat-card .stat-big { font-size: 1.5rem; } }
+    .stat-card .stat-desc { font-size: .875rem; color: #4b5563; }
+
+    /* ── METHODOLOGY NOTE ── */
+    .methodology {
+      margin-top: 1.5rem; background: #f9fafb; padding: 1.5rem; border-radius: .5rem;
+      border: 1px solid #e5e7eb; font-size: .875rem; color: #374151; line-height: 1.7;
+    }
+    .methodology p { margin-bottom: .75rem; }
+    .methodology p:last-child { margin-bottom: 0; }
+    .methodology a { color: #2563eb; text-decoration: underline; }
+    .methodology a:hover { color: #1e40af; }
+
+    /* ── MAP ── */
+    .map-section { text-align: center; }
+    .map-section h2 { font-family: 'Octarine', sans-serif; font-weight: 700; font-size: 1.5rem; margin-bottom: .5rem; }
+    @media (min-width: 768px) { .map-section h2 { font-size: 2rem; } }
+    .map-section .subtitle { font-size: 1.125rem; margin-bottom: .5rem; }
+    .map-section .click-hint { font-weight: 700; font-size: .875rem; }
+    @media (min-width: 768px) { .map-section .click-hint { font-size: 1rem; } }
+    #map-container { width: 100%; min-height: 500px; border-radius: 16px; overflow: hidden; border: 3px solid #000; margin-top: 1rem; position: relative; background: #79CAC4; }
+    .map-placeholder {
+      display: flex; align-items: center; justify-content: center; min-height: 500px;
+      background: #f1f5f9; color: #64748b; font-size: 1.125rem; font-weight: 500;
+    }
+    #map { width: 100%; height: 600px; }
+    .map-popup { font-family: 'DM Sans', sans-serif; padding: .25rem; }
+    .map-popup h4 { font-family: 'Octarine', sans-serif; font-weight: 700; font-size: 1rem; margin-bottom: .25rem; }
+    .map-popup .code { font-size: .75rem; color: #6b7280; }
+    .map-popup .stats { margin-top: .5rem; font-size: .875rem; }
+    .map-popup .stats div { margin-bottom: .25rem; }
+    .map-legend {
+      position: absolute; bottom: 2rem; right: 1rem; background: rgba(255,255,255,.95);
+      padding: .75rem 1rem; border-radius: .5rem; font-size: .75rem; z-index: 5;
+      box-shadow: 0 2px 8px rgba(0,0,0,.15); border: 1px solid #e5e7eb;
+    }
+    .map-legend h4 { font-weight: 700; margin-bottom: .5rem; font-size: .8rem; }
+    .map-legend .legend-item { display: flex; align-items: center; gap: .5rem; margin-bottom: .25rem; }
+    .map-legend .legend-swatch { width: 16px; height: 16px; border-radius: 2px; border: 1px solid #ccc; }
+
+    /* ── FOOTER ── */
+    .site-footer {
+      background: var(--brand-footer); color: #fff; padding: 3rem 1.5rem; margin-top: auto;
+    }
+    .footer-grid {
+      display: grid; grid-template-columns: 1fr; gap: 2rem; text-align: center; align-items: center;
+    }
+    @media (min-width: 768px) {
+      .footer-grid { grid-template-columns: repeat(3, 1fr); text-align: left; }
+      .footer-center { text-align: center; }
+      .footer-right { display: flex; gap: 1rem; justify-content: flex-end; }
+    }
+    .footer-social { display: flex; justify-content: center; gap: 1rem; margin-top: 1rem; }
+    .footer-social a { color: #fff; transition: color .2s; text-decoration: none; }
+    .footer-social a:hover { color: #d1d5db; }
+    .footer-right a { color: #fff; text-decoration: underline; }
+
+    /* ── SIGNUP MODAL ── */
+    .signup-modal-overlay {
+      position: fixed; inset: 0; z-index: 10000;
+      background: rgba(0,0,0,.5); display: none; align-items: center; justify-content: center;
+      padding: 1rem;
+    }
+    .signup-modal-overlay.show { display: flex; }
+    .signup-modal {
+      background: #fff; border: 3px solid #000;
+      padding: 2.5rem 2rem; max-width: 500px; width: 90%; text-align: center;
+      box-shadow: 8px 8px 0 #000; position: relative;
+    }
+    .signup-modal-x {
+      position: absolute; top: .75rem; right: .75rem; background: none; border: none;
+      cursor: pointer; font-size: 1.5rem; line-height: 1; padding: .25rem; color: #000;
+    }
+    .signup-modal-x:hover { opacity: .6; }
+    .signup-modal h3 { font-family: 'Octarine', sans-serif; font-weight: 700; font-size: 1.5rem; margin-bottom: .5rem; }
+    .signup-modal p { color: #4b5563; font-size: .95rem; margin-bottom: 1.5rem; }
+    .signup-modal-socials { display: flex; flex-direction: column; gap: .625rem; margin-bottom: 1.5rem; }
+    .signup-modal-socials a {
+      display: flex; align-items: center; justify-content: center; gap: .5rem;
+      padding: .75rem 1.25rem; font-weight: 700; font-size: .95rem;
+      text-decoration: none; color: #fff; border: 2px solid #000; transition: opacity .2s;
+    }
+    .signup-modal-socials a:hover { opacity: .85; }
+    .signup-modal-socials .btn-x { background: #000; }
+    .signup-modal-socials .btn-ig { background: linear-gradient(45deg, #f09433, #e6683c, #dc2743, #cc2366, #bc1888); }
+    .signup-modal-close {
+      background: none; border: 2px solid #000;
+      padding: .6rem 1.5rem; cursor: pointer; font-family: 'DM Sans', sans-serif;
+      font-weight: 700; font-size: .875rem; color: #000; transition: background .2s;
+    }
+    .signup-modal-close:hover { background: #f3f4f6; }
+
+    /* ── SORT ARROWS ── */
+    .sort-icon { width: 16px; height: 16px; margin-left: 4px; flex-shrink: 0; }
+
+    /* ── LOADING SKELETON ── */
+    .skeleton-row { animation: pulse 1.5s ease-in-out infinite; }
+    @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: .4; } }
+
+    /* ── EMPTY STATE ── */
+    .empty-state {
+      padding: 4rem 2rem; text-align: center; color: #6b7280;
+    }
+    .empty-state .icon { font-size: 3rem; margin-bottom: 1rem; }
+    .empty-state h3 { font-family: 'Octarine', sans-serif; font-size: 1.5rem; font-weight: 700; color: #374151; margin-bottom: .5rem; }
+    .empty-state p { font-size: 1rem; }
+  </style>
+</head>
+<body>
+
+  <!-- ════════════════════════════════════════════ NAV ════════════════════════════════════════════ -->
+  <nav class="nav-bar">
+    <a href="https://lookingforgrowth.uk" class="nav-logo">LFG</a>
+    <button class="nav-hamburger" onclick="toggleNav()" aria-label="Menu">
+      <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+    </button>
+    <div class="nav-links">
+      <!-- Mobile header with LFG logo + close button -->
+      <div class="nav-mobile-header">
+        <a href="https://lookingforgrowth.uk" class="nav-mobile-logo">LFG</a>
+        <button class="nav-close" onclick="toggleNav()" aria-label="Close menu">
+          <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        </button>
+      </div>
+      <!-- Nav links -->
+      <div class="nav-links-list">
+        <a href="https://lookingforgrowth.uk/youth-unemployment-dashboard.html">Youth Unemployment</a>
+        <a href="https://dashboards.lookingforgrowth.uk/dashboards/opinion-tracker">Opinion Tracker</a>
+        <a href="https://dashboards.lookingforgrowth.uk/dashboards/energy-costs/">Energy Costs</a>
+        <a href="https://dashboards.lookingforgrowth.uk/dashboards/state-of-the-nation">State of the Nation</a>
+        <a href="https://dashboards.lookingforgrowth.uk/dashboards/no-more-delays/">No More Delays</a>
+        <a href="https://dashboards.lookingforgrowth.uk/dashboards/planning-applications/admin-ongoing/">Planning Applications</a>
+        <a href="#">Dirty Dashboard</a>
+      </div>
+      <!-- Mobile footer with donate + merch -->
+      <div class="nav-mobile-footer">
+        <a href="https://lookingforgrowth.uk/donate">donate &rarr;</a>
+        <a href="https://merch.lookingforgrowth.uk/" target="_blank" rel="noopener noreferrer">buy our merch &rarr;</a>
+      </div>
+      <!-- Desktop-only links (hidden on mobile) -->
+      <a href="https://dashboards.lookingforgrowth.uk/">Other Dashboards</a>
+      <a href="https://merch.lookingforgrowth.uk/" target="_blank" rel="noopener noreferrer">Merch</a>
+      <a href="https://lookingforgrowth.uk/donate" class="donate-btn">donate</a>
+    </div>
+  </nav>
+  <div class="nav-overlay" onclick="toggleNav()"></div>
+
+  <!-- ════════════════════════════════════════════ HERO ════════════════════════════════════════════ -->
+  <div class="hero">
+    <h1>The Dirty Dashboard</h1>
+  </div>
+
+  <!-- ════════════════════════════════════════════ INTRO ════════════════════════════════════════════ -->
+  <div class="section section-intro">
+    <h2 class="font-octarine">UK streets are plagued with RAMPANT FLY TIPPING which never gets resolved</h2>
+    <div class="desc">
+      <p>local authorities are responsible for investigating fly-tipping</p>
+      <p>but many areas have 10,000s of cases and solution rates close to 0%</p>
+      <p>it doesn't have to be this way, and local authorities should be made to ACT</p>
+    </div>
+
+  </div>
+
+  <!-- ════════════════════════════════════════════ LEAGUE TABLE ════════════════════════════════════════════ -->
+  <div class="section">
+    <div style="display:flex;flex-direction:column;gap:2.5rem;">
+      <h2 class="font-octarine" style="font-weight:700;font-size:2rem;text-align:center;">fly-tipping league table</h2>
+      <!-- Search -->
+      <input type="text" class="search-input" id="search-input" placeholder="Search for your local authority..." oninput="handleSearch(this.value)">
+
+      <!-- Search Preview (shown when searching and table collapsed) -->
+      <div id="search-preview" class="search-preview" style="display:none;"></div>
+
+      <!-- Toggle Button -->
+      <button class="table-toggle-btn" id="table-toggle-btn" onclick="toggleTable()">
+        <span id="toggle-label">View full table</span>
+        <svg id="toggle-chevron" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>
+      </button>
+
+      <!-- Table (collapsed by default) -->
+      <div class="league-table-wrapper" id="table-wrapper" style="display:none;">
+        <div class="table-header" id="table-header">
+          <div onclick="sortTable('rank')">#</div>
+          <div class="col-name" onclick="sortTable('authority')"><span>Local Authority</span><span class="sort-icon" id="sort-authority"></span></div>
+          <div class="col-total" onclick="sortTable('totalCases')"><span>Total Cases</span><span class="sort-icon" id="sort-totalCases"></span></div>
+          <div onclick="sortTable('fpnToIncidents')"><span>% of FPNs<br>to Incidents</span><span class="sort-icon" id="sort-fpnToIncidents"></span></div>
+        </div>
+        <div id="table-body">
+          <!-- Rows rendered by JS -->
+          <div class="empty-state">
+            <div class="icon">📊</div>
+            <h3>Data Loading Soon</h3>
+            <p>New data will be available when the spreadsheet is connected.<br>Check back at 9:30 AM on release day.</p>
+          </div>
+        </div>
+        <div class="table-footer" id="table-footer" style="display:none;">
+          <p>Click column headers to sort &bull; Showing top <span id="showing-count">20</span> local authorities</p>
+          <button onclick="showMore()">Show next 20</button>
+        </div>
+      </div>
+
+      <!-- Stats Cards -->
+      <div class="stats-grid" id="stats-grid">
+        <div class="stat-card">
+          <div class="stat-big" style="color:#ea580c;" id="stat-avg-fpn">—</div>
+          <div class="stat-desc">Avg % of FPNs to Incidents</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-big" style="color:#7f1d1d;" id="stat-worst-council">—</div>
+          <div class="stat-desc">Worst Council</div>
+          <div style="font-size:.75rem;color:#6b7280;margin-top:.25rem;" id="stat-worst-council-rate"></div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-big" style="color:#dc2626;" id="stat-most-incidents">—</div>
+          <div class="stat-desc">Most Incidents</div>
+          <div style="font-size:.75rem;color:#6b7280;margin-top:.25rem;" id="stat-most-incidents-count"></div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ════════════════════════════════════════════ MAP ════════════════════════════════════════════ -->
+  <div class="section" style="padding-top:1rem;padding-bottom:2.5rem;">
+    <div class="map-section">
+      <h2>fly-tipping map</h2>
+      <p class="subtitle">explore fly-tipping rates across England's local authorities</p>
+      <p class="click-hint">click regions for more information</p>
+      <div id="map-container">
+        <div id="map"></div>
+        <div class="map-legend">
+          <h4>% of FPNs to Incidents</h4>
+          <div class="legend-item"><div class="legend-swatch" style="background:#7f1d1d"></div> 0-5% Disgraceful</div>
+          <div class="legend-item"><div class="legend-swatch" style="background:#dc2626"></div> 5-10% Very Poor</div>
+          <div class="legend-item"><div class="legend-swatch" style="background:#f97316"></div> 10-20% Poor</div>
+          <div class="legend-item"><div class="legend-swatch" style="background:#eab308"></div> 20-40% Decent</div>
+          <div class="legend-item"><div class="legend-swatch" style="background:#16a34a"></div> 40-100% Acceptable</div>
+          <div class="legend-item"><div class="legend-swatch" style="background:#9B59B6"></div> 100%+ Suspicious</div>
+          <div class="legend-item"><div class="legend-swatch" style="background:#EBE3D0"></div> No data</div>
+        </div>
+      </div>
+      <div class="methodology" style="margin-top:1.5rem;">
+        <p>A Fixed Penalty Notice is a mechanism from the Government to allow someone to avoid prosecution and discharge their liability through paying a fine.</p>
+        <p>Anything highlighted in purple is a suspicious value (over 100%). This could be due to several factors, such as multiple offenders being involved in a single fly-tipping incident, or reporting issues.</p>
+        <p>The 'Worst Council' is the local authority with the lowest ratio of Fixed Penalty Notices issued to fly-tipping incidents reported. This measures how poorly a council is using its enforcement powers relative to the scale of the problem in its area.</p>
+        <p><strong>Source:</strong> <a href="https://www.gov.uk/government/statistics/announcements/fly-tipping-statistics-for-england--3" target="_blank" rel="noopener noreferrer">Fly-tipping statistics for England — GOV.UK</a></p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ════════════════════════════════════════════ NEWSLETTER CTA ════════════════════════════════════════════ -->
+  <div style="background:#EBE3D0;padding:3rem 1.5rem;border-top:3px solid #000;border-bottom:3px solid #000;">
+    <div style="max-width:700px;margin:0 auto;text-align:center;display:flex;flex-direction:column;gap:1rem;align-items:center;">
+      <h2 class="font-octarine" style="font-weight:700;font-size:2rem;">Think this isn't on?</h2>
+      <p style="font-size:1.125rem;font-weight:300;line-height:1.7;">Join our mailing list and reverse Britain's decline.</p>
+      <form class="newsletter-form" id="newsletter-form-1" onsubmit="return handleNewsletter(event, this)" style="background:transparent;box-shadow:none;border:none;max-width:100%;width:100%;">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;">
+          <div style="display:flex;flex-direction:column;gap:.5rem;text-align:left;">
+            <label>name</label>
+            <input type="text" name="firstName" style="border:2px solid #000;border-radius:.75rem;background:#EBE3D0;">
+          </div>
+          <div style="display:flex;flex-direction:column;gap:.5rem;text-align:left;">
+            <label>email*</label>
+            <input type="email" name="email" required style="border:2px solid #000;border-radius:.75rem;background:#EBE3D0;">
+          </div>
+        </div>
+        <button type="submit">join us</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- ════════════════════════════════════════════ FOOTER ════════════════════════════════════════════ -->
+  <footer class="site-footer">
+    <div class="footer-grid" style="max-width:72rem;margin:0 auto;">
+      <div>
+        <div>Something Completely Different Limited</div>
+        <div>For enquiries and concerns</div>
+        <div>hello@lookingforgrowth.uk</div>
+      </div>
+      <div class="footer-center">
+        <div>For Press Enquiries</div>
+        <div>press@lookingforgrowth.uk</div>
+        <div class="footer-social">
+          <a href="https://www.linkedin.com/company/lfg-uk" target="_blank" rel="noopener noreferrer" aria-label="LinkedIn">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M20.5 2h-17A1.5 1.5 0 002 3.5v17A1.5 1.5 0 003.5 22h17a1.5 1.5 0 001.5-1.5v-17A1.5 1.5 0 0020.5 2zM8 19H5v-9h3zM6.5 8.25A1.75 1.75 0 118.3 6.5a1.78 1.78 0 01-1.8 1.75zM19 19h-3v-4.74c0-1.42-.6-1.93-1.38-1.93A1.74 1.74 0 0013 14.19a.66.66 0 000 .14V19h-3v-9h2.9v1.3a3.11 3.11 0 012.7-1.4c1.55 0 3.36.86 3.36 3.66z"/></svg>
+          </a>
+          <a href="https://www.tiktok.com/@looking.for.growth" target="_blank" rel="noopener noreferrer" aria-label="TikTok">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M19.59 6.69a4.83 4.83 0 01-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 01-2.88 2.5 2.89 2.89 0 01-2.89-2.89 2.89 2.89 0 012.89-2.89 2.84 2.84 0 01.89.14V9.02a6.25 6.25 0 00-1-.05A6.34 6.34 0 003 15.31a6.34 6.34 0 006.38 6.33 6.34 6.34 0 006.38-6.33V9.19a8.16 8.16 0 004.83 1.56V7.3a4.85 4.85 0 01-1-.61z"/></svg>
+          </a>
+          <a href="https://x.com/lfg_uk" target="_blank" rel="noopener noreferrer" aria-label="X (Twitter)">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
+          </a>
+          <a href="https://www.facebook.com/lookingforgrowth/" target="_blank" rel="noopener noreferrer" aria-label="Facebook">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>
+          </a>
+          <a href="https://www.instagram.com/lookingforgrowthuk/" target="_blank" rel="noopener noreferrer" aria-label="Instagram">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zM12 0C8.741 0 8.333.014 7.053.072 2.695.272.273 2.69.073 7.052.014 8.333 0 8.741 0 12c0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98C8.333 23.986 8.741 24 12 24c3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98C15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 100 12.324 6.162 6.162 0 000-12.324zM12 16a4 4 0 110-8 4 4 0 010 8zm6.406-11.845a1.44 1.44 0 100 2.881 1.44 1.44 0 000-2.881z"/></svg>
+          </a>
+        </div>
+      </div>
+      <div class="footer-right" style="display:flex;flex-direction:column;gap:1rem;">
+        <a download href="https://lfg-site-content.s3.eu-west-2.amazonaws.com/Privacy+Policy.pdf">Privacy Policy</a>
+        <a download href="https://lfg-site-content.s3.eu-west-2.amazonaws.com/Cookies+Policy.pdf">Cookie Policy</a>
+      </div>
+    </div>
+  </footer>
+
+  <!-- ════════════════════════════════════════════ JAVASCRIPT ════════════════════════════════════════════ -->
+  <script>
+    // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+    // MOBILE NAV TOGGLE
+    function toggleNav() {
+      document.querySelector('.nav-links').classList.toggle('open');
+      document.querySelector('.nav-overlay').classList.toggle('open');
+    }
+
+    // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+    // DATA SOURCE
+    // Replace this empty array with your spreadsheet data.
+    // Each object should have these fields:
+    //   authority, code, totalCases,
+    //   penaltyRate, fpnToIncidents
+    //
+    // Example:
+    //   { authority: "Croydon", code: "E09000008", totalCases: 35470,
+    //     unresolvedCases: 35462, penaltyRate: 0.0, prosecutionRate: 0.0 }
+    //
+    // To connect to a Google Sheet:
+    //   1. Publish the sheet as CSV
+    //   2. Fetch & parse it in loadSpreadsheetData() below
+    // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+    let ALL_DATA = [{"authority": "Croydon", "code": "E09000008", "totalCases": 53268, "fpnToIncidents": 0.04}, {"authority": "Camden", "code": "E09000007", "totalCases": 36216, "fpnToIncidents": 3.23}, {"authority": "Lewisham", "code": "E09000023", "totalCases": 33471, "fpnToIncidents": 2.23}, {"authority": "Hackney", "code": "E09000012", "totalCases": 31042, "fpnToIncidents": 0.34}, {"authority": "Newham", "code": "E09000025", "totalCases": 26502, "fpnToIncidents": 54.72}, {"authority": "Nottingham", "code": "E06000018", "totalCases": 26138, "fpnToIncidents": 3.72}, {"authority": "Ealing", "code": "E09000009", "totalCases": 25394, "fpnToIncidents": 9.57}, {"authority": "Hounslow", "code": "E09000018", "totalCases": 25177, "fpnToIncidents": 0.02}, {"authority": "Birmingham", "code": "E08000025", "totalCases": 24664, "fpnToIncidents": 0.62}, {"authority": "West Northamptonshire", "code": "E06000062", "totalCases": 21304, "fpnToIncidents": 0.26}, {"authority": "Lambeth", "code": "E09000022", "totalCases": 21220, "fpnToIncidents": 4.36}, {"authority": "Liverpool", "code": "E08000012", "totalCases": 20300, "fpnToIncidents": 0.0}, {"authority": "Westminster", "code": "E09000033", "totalCases": 20047, "fpnToIncidents": 12.58}, {"authority": "Bradford", "code": "E08000032", "totalCases": 19697, "fpnToIncidents": 0.46}, {"authority": "Southwark", "code": "E09000028", "totalCases": 18530, "fpnToIncidents": 3.0}, {"authority": "Haringey", "code": "E09000014", "totalCases": 16915, "fpnToIncidents": 7.25}, {"authority": "Newcastle-upon-Tyne", "code": "E08000021", "totalCases": 16731, "fpnToIncidents": 0.94}, {"authority": "Greenwich", "code": "E09000011", "totalCases": 16638, "fpnToIncidents": 1.08}, {"authority": "Brent", "code": "E09000005", "totalCases": 16338, "fpnToIncidents": 22.37}, {"authority": "Manchester", "code": "E08000003", "totalCases": 14963, "fpnToIncidents": 6.63}, {"authority": "Merton", "code": "E09000024", "totalCases": 14883, "fpnToIncidents": 8.78}, {"authority": "Harrow", "code": "E09000015", "totalCases": 13925, "fpnToIncidents": 9.05}, {"authority": "Leeds", "code": "E08000035", "totalCases": 13923, "fpnToIncidents": 0.6}, {"authority": "Kingston-upon-Hull", "code": "E06000010", "totalCases": 13663, "fpnToIncidents": 2.12}, {"authority": "Sandwell", "code": "E08000028", "totalCases": 12542, "fpnToIncidents": 0.22}, {"authority": "Sheffield", "code": "E08000019", "totalCases": 12237, "fpnToIncidents": 1.05}, {"authority": "Southampton", "code": "E06000045", "totalCases": 12208, "fpnToIncidents": 0.31}, {"authority": "Luton", "code": "E06000032", "totalCases": 11599, "fpnToIncidents": 1.24}, {"authority": "Peterborough", "code": "E06000031", "totalCases": 10474, "fpnToIncidents": 2.36}, {"authority": "Bristol", "code": "E06000023", "totalCases": 10266, "fpnToIncidents": 2.11}, {"authority": "Waltham Forest", "code": "E09000031", "totalCases": 10246, "fpnToIncidents": 26.89}, {"authority": "Kirklees", "code": "E08000034", "totalCases": 10120, "fpnToIncidents": 0.52}, {"authority": "Hillingdon", "code": "E09000017", "totalCases": 9846, "fpnToIncidents": 1.08}, {"authority": "Sunderland", "code": "E08000024", "totalCases": 9481, "fpnToIncidents": 1.0}, {"authority": "Enfield", "code": "E09000010", "totalCases": 9218, "fpnToIncidents": 51.12}, {"authority": "Redbridge", "code": "E09000026", "totalCases": 8189, "fpnToIncidents": 13.6}, {"authority": "Hammersmith and Fulham", "code": "E09000013", "totalCases": 8087, "fpnToIncidents": 26.76}, {"authority": "Wirral", "code": "E08000015", "totalCases": 7977, "fpnToIncidents": 0.0}, {"authority": "Great Yarmouth", "code": "E07000145", "totalCases": 7720, "fpnToIncidents": 0.83}, {"authority": "Barking and Dagenham", "code": "E09000002", "totalCases": 7617, "fpnToIncidents": 2.07}, {"authority": "Kensington and Chelsea", "code": "E09000020", "totalCases": 7613, "fpnToIncidents": 28.41}, {"authority": "Salford", "code": "E08000006", "totalCases": 7610, "fpnToIncidents": 0.62}, {"authority": "Bolton", "code": "E08000001", "totalCases": 7551, "fpnToIncidents": 2.57}, {"authority": "Coventry", "code": "E08000026", "totalCases": 7188, "fpnToIncidents": 2.77}, {"authority": "Bromley", "code": "E09000006", "totalCases": 6981, "fpnToIncidents": 0.44}, {"authority": "Leicester", "code": "E06000016", "totalCases": 6966, "fpnToIncidents": 3.3}, {"authority": "Barnet", "code": "E09000003", "totalCases": 6938, "fpnToIncidents": 5.9}, {"authority": "Wakefield", "code": "E08000036", "totalCases": 6934, "fpnToIncidents": 0.45}, {"authority": "Walsall", "code": "E08000030", "totalCases": 6604, "fpnToIncidents": 0.3}, {"authority": "Derby", "code": "E06000015", "totalCases": 6477, "fpnToIncidents": 2.81}, {"authority": "Medway", "code": "E06000035", "totalCases": 6262, "fpnToIncidents": 2.57}, {"authority": "Basildon", "code": "E07000066", "totalCases": 6220, "fpnToIncidents": 3.59}, {"authority": "Pendle", "code": "E07000122", "totalCases": 6186, "fpnToIncidents": 1.31}, {"authority": "Tower Hamlets", "code": "E09000030", "totalCases": 6029, "fpnToIncidents": 7.07}, {"authority": "Oldham", "code": "E08000004", "totalCases": 5959, "fpnToIncidents": 3.46}, {"authority": "Stoke-on-Trent", "code": "E06000021", "totalCases": 5893, "fpnToIncidents": 35.79}, {"authority": "Telford and Wrekin", "code": "E06000020", "totalCases": 5811, "fpnToIncidents": 1.76}, {"authority": "North Northamptonshire", "code": "E06000061", "totalCases": 5793, "fpnToIncidents": 1.35}, {"authority": "Preston", "code": "E07000123", "totalCases": 5642, "fpnToIncidents": 0.35}, {"authority": "Norwich", "code": "E07000148", "totalCases": 5638, "fpnToIncidents": 0.09}, {"authority": "Richmond upon Thames", "code": "E09000027", "totalCases": 5611, "fpnToIncidents": 0.94}, {"authority": "Wandsworth", "code": "E09000032", "totalCases": 5580, "fpnToIncidents": 32.76}, {"authority": "Barnsley", "code": "E08000016", "totalCases": 5404, "fpnToIncidents": 0.35}, {"authority": "Plymouth", "code": "E06000026", "totalCases": 5370, "fpnToIncidents": 5.23}, {"authority": "Redcar and Cleveland", "code": "E06000003", "totalCases": 5317, "fpnToIncidents": 2.2}, {"authority": "Rochdale", "code": "E08000005", "totalCases": 5302, "fpnToIncidents": 0.28}, {"authority": "County Durham", "code": "E06000047", "totalCases": 5260, "fpnToIncidents": 1.79}, {"authority": "Gateshead", "code": "E08000037", "totalCases": 5232, "fpnToIncidents": 0.19}, {"authority": "Rotherham", "code": "E08000018", "totalCases": 5200, "fpnToIncidents": 6.56}, {"authority": "Oxford", "code": "E07000178", "totalCases": 5181, "fpnToIncidents": 0.27}, {"authority": "Blackpool", "code": "E06000009", "totalCases": 5053, "fpnToIncidents": 1.42}, {"authority": "Bournemouth, Christchurch and Poole", "code": "E06000058", "totalCases": 4966, "fpnToIncidents": 1.43}, {"authority": "Boston", "code": "E07000136", "totalCases": 4687, "fpnToIncidents": 1.43}, {"authority": "Lincoln", "code": "E07000138", "totalCases": 4653, "fpnToIncidents": 0.45}, {"authority": "Havering", "code": "E09000016", "totalCases": 4532, "fpnToIncidents": 17.98}, {"authority": "Rugby", "code": "E07000220", "totalCases": 4488, "fpnToIncidents": 0.51}, {"authority": "Colchester", "code": "E07000071", "totalCases": 4348, "fpnToIncidents": 3.08}, {"authority": "Milton Keynes", "code": "E06000042", "totalCases": 4258, "fpnToIncidents": 2.7}, {"authority": "Burnley", "code": "E07000117", "totalCases": 4205, "fpnToIncidents": 4.9}, {"authority": "Buckinghamshire", "code": "E06000060", "totalCases": 4198, "fpnToIncidents": 0.83}, {"authority": "Sefton", "code": "E08000014", "totalCases": 4110, "fpnToIncidents": 3.7}, {"authority": "Cheshire West and Chester", "code": "E06000050", "totalCases": 4017, "fpnToIncidents": 3.21}, {"authority": "Solihull", "code": "E08000029", "totalCases": 3998, "fpnToIncidents": 0.03}, {"authority": "Cornwall", "code": "E06000052", "totalCases": 3931, "fpnToIncidents": 0.53}, {"authority": "North Tyneside", "code": "E08000022", "totalCases": 3882, "fpnToIncidents": 1.42}, {"authority": "Sutton", "code": "E09000029", "totalCases": 3873, "fpnToIncidents": 3.23}, {"authority": "Darlington", "code": "E06000005", "totalCases": 3846, "fpnToIncidents": 0.31}, {"authority": "Blackburn with Darwen", "code": "E06000008", "totalCases": 3828, "fpnToIncidents": 4.36}, {"authority": "Bexley", "code": "E09000004", "totalCases": 3787, "fpnToIncidents": 16.58}, {"authority": "Cheshire East", "code": "E06000049", "totalCases": 3784, "fpnToIncidents": 1.11}, {"authority": "Swindon", "code": "E06000030", "totalCases": 3759, "fpnToIncidents": 0.67}, {"authority": "Stockport", "code": "E08000007", "totalCases": 3749, "fpnToIncidents": 0.11}, {"authority": "Northumberland", "code": "E06000057", "totalCases": 3623, "fpnToIncidents": 1.21}, {"authority": "Huntingdonshire", "code": "E07000011", "totalCases": 3560, "fpnToIncidents": 0.28}, {"authority": "Epping Forest", "code": "E07000072", "totalCases": 3542, "fpnToIncidents": 0.96}, {"authority": "South Tyneside", "code": "E08000023", "totalCases": 3443, "fpnToIncidents": 0.81}, {"authority": "Cumberland", "code": "E06000063", "totalCases": 3399, "fpnToIncidents": 3.97}, {"authority": "Reigate and Banstead", "code": "E07000211", "totalCases": 3363, "fpnToIncidents": 0.56}, {"authority": "Wolverhampton", "code": "E08000031", "totalCases": 3336, "fpnToIncidents": 1.59}, {"authority": "Islington", "code": "E09000019", "totalCases": 3330, "fpnToIncidents": 23.18}, {"authority": "North Yorkshire", "code": "E06000065", "totalCases": 3329, "fpnToIncidents": 1.65}, {"authority": "Dudley", "code": "E08000027", "totalCases": 3303, "fpnToIncidents": 1.88}, {"authority": "Bury", "code": "E08000002", "totalCases": 3227, "fpnToIncidents": 1.52}, {"authority": "Tameside", "code": "E08000008", "totalCases": 3203, "fpnToIncidents": 8.68}, {"authority": "Lancaster", "code": "E07000121", "totalCases": 3190, "fpnToIncidents": 0.0}, {"authority": "Hartlepool", "code": "E06000001", "totalCases": 3182, "fpnToIncidents": 8.77}, {"authority": "Wigan", "code": "E08000010", "totalCases": 3110, "fpnToIncidents": 5.37}, {"authority": "Stevenage", "code": "E07000243", "totalCases": 3058, "fpnToIncidents": 0.13}, {"authority": "Thurrock", "code": "E06000034", "totalCases": 3037, "fpnToIncidents": 36.62}, {"authority": "Central Bedfordshire", "code": "E06000056", "totalCases": 3031, "fpnToIncidents": 0.69}, {"authority": "Welwyn Hatfield", "code": "E07000241", "totalCases": 3028, "fpnToIncidents": 3.47}, {"authority": "Canterbury", "code": "E07000106", "totalCases": 3012, "fpnToIncidents": 0.9}, {"authority": "Wiltshire", "code": "E06000054", "totalCases": 3005, "fpnToIncidents": 3.59}, {"authority": "Somerset", "code": "E06000066", "totalCases": 2830, "fpnToIncidents": 0.49}, {"authority": "Maidstone", "code": "E07000110", "totalCases": 2817, "fpnToIncidents": 1.6}, {"authority": "Slough", "code": "E06000039", "totalCases": 2804, "fpnToIncidents": 2.57}, {"authority": "Middlesbrough", "code": "E06000002", "totalCases": 2753, "fpnToIncidents": 1.93}, {"authority": "Warwick", "code": "E07000222", "totalCases": 2724, "fpnToIncidents": 0.48}, {"authority": "Basingstoke and Deane", "code": "E07000084", "totalCases": 2701, "fpnToIncidents": 0.81}, {"authority": "Swale", "code": "E07000113", "totalCases": 2654, "fpnToIncidents": 0.6}, {"authority": "Hyndburn", "code": "E07000120", "totalCases": 2631, "fpnToIncidents": 6.2}, {"authority": "Thanet", "code": "E07000114", "totalCases": 2578, "fpnToIncidents": 1.05}, {"authority": "Gravesham", "code": "E07000109", "totalCases": 2574, "fpnToIncidents": 3.22}, {"authority": "Harlow", "code": "E07000073", "totalCases": 2546, "fpnToIncidents": 9.94}, {"authority": "Stockton-on-Tees", "code": "E06000004", "totalCases": 2432, "fpnToIncidents": 0.0}, {"authority": "Kingston upon Thames", "code": "E09000021", "totalCases": 2390, "fpnToIncidents": 0.5}, {"authority": "Trafford", "code": "E08000009", "totalCases": 2334, "fpnToIncidents": 0.81}, {"authority": "York", "code": "E06000014", "totalCases": 2309, "fpnToIncidents": 1.39}, {"authority": "Crawley", "code": "E07000226", "totalCases": 2298, "fpnToIncidents": 1.96}, {"authority": "Redditch", "code": "E07000236", "totalCases": 2255, "fpnToIncidents": 0.27}, {"authority": "Reading", "code": "E06000038", "totalCases": 2229, "fpnToIncidents": 9.91}, {"authority": "North Somerset", "code": "E06000024", "totalCases": 2226, "fpnToIncidents": 0.09}, {"authority": "Warrington", "code": "E06000007", "totalCases": 2216, "fpnToIncidents": 0.81}, {"authority": "Southend-on-Sea", "code": "E06000033", "totalCases": 2214, "fpnToIncidents": 0.0}, {"authority": "Folkestone and Hythe", "code": "E07000112", "totalCases": 2200, "fpnToIncidents": 7.55}, {"authority": "Knowsley", "code": "E08000011", "totalCases": 2193, "fpnToIncidents": 0.46}, {"authority": "South Gloucestershire", "code": "E06000025", "totalCases": 2189, "fpnToIncidents": 1.01}, {"authority": "Cambridge", "code": "E07000008", "totalCases": 2166, "fpnToIncidents": 6.88}, {"authority": "East Suffolk", "code": "E07000244", "totalCases": 2155, "fpnToIncidents": 1.44}, {"authority": "Nuneaton and Bedworth", "code": "E07000219", "totalCases": 2141, "fpnToIncidents": 6.68}, {"authority": "North East Lincolnshire", "code": "E06000012", "totalCases": 2129, "fpnToIncidents": 0.09}, {"authority": "West Lancashire", "code": "E07000127", "totalCases": 2122, "fpnToIncidents": 1.08}, {"authority": "Wokingham", "code": "E06000041", "totalCases": 2085, "fpnToIncidents": 7.96}, {"authority": "Bath and North East Somerset", "code": "E06000022", "totalCases": 2057, "fpnToIncidents": 8.65}, {"authority": "Bedford", "code": "E06000055", "totalCases": 1988, "fpnToIncidents": 4.53}, {"authority": "Mansfield", "code": "E07000174", "totalCases": 1963, "fpnToIncidents": 0.87}, {"authority": "Doncaster", "code": "E08000017", "totalCases": 1937, "fpnToIncidents": 7.07}, {"authority": "Dacorum", "code": "E07000096", "totalCases": 1899, "fpnToIncidents": 2.9}, {"authority": "Kings Lynn and West Norfolk", "code": "E07000146", "totalCases": 1831, "fpnToIncidents": 1.2}, {"authority": "Bassetlaw", "code": "E07000171", "totalCases": 1768, "fpnToIncidents": 0.85}, {"authority": "South Holland", "code": "E07000140", "totalCases": 1751, "fpnToIncidents": 2.63}, {"authority": "Shropshire", "code": "E06000051", "totalCases": 1734, "fpnToIncidents": 0.23}, {"authority": "Dartford", "code": "E07000107", "totalCases": 1694, "fpnToIncidents": 7.32}, {"authority": "City of London", "code": "E09000001", "totalCases": 1655, "fpnToIncidents": 62.54}, {"authority": "Runnymede", "code": "E07000212", "totalCases": 1653, "fpnToIncidents": 0.12}, {"authority": "Newark and Sherwood", "code": "E07000175", "totalCases": 1645, "fpnToIncidents": 13.98}, {"authority": "Fenland", "code": "E07000010", "totalCases": 1640, "fpnToIncidents": 0.85}, {"authority": "Brighton and Hove", "code": "E06000043", "totalCases": 1627, "fpnToIncidents": 23.97}, {"authority": "East Lindsey", "code": "E07000137", "totalCases": 1603, "fpnToIncidents": 1.43}, {"authority": "Bromsgrove", "code": "E07000234", "totalCases": 1591, "fpnToIncidents": 0.44}, {"authority": "Tamworth", "code": "E07000199", "totalCases": 1589, "fpnToIncidents": 0.13}, {"authority": "Torbay", "code": "E06000027", "totalCases": 1556, "fpnToIncidents": 3.73}, {"authority": "Westmorland and Furness", "code": "E06000064", "totalCases": 1546, "fpnToIncidents": 0.39}, {"authority": "Gloucester", "code": "E07000081", "totalCases": 1531, "fpnToIncidents": 3.92}, {"authority": "Hastings", "code": "E07000062", "totalCases": 1529, "fpnToIncidents": 1.83}, {"authority": "West Lindsey", "code": "E07000142", "totalCases": 1517, "fpnToIncidents": 1.98}, {"authority": "Woking", "code": "E07000217", "totalCases": 1501, "fpnToIncidents": 0.93}, {"authority": "Elmbridge", "code": "E07000207", "totalCases": 1468, "fpnToIncidents": 3.13}, {"authority": "Horsham", "code": "E07000227", "totalCases": 1464, "fpnToIncidents": 4.85}, {"authority": "East Staffordshire", "code": "E07000193", "totalCases": 1460, "fpnToIncidents": 1.64}, {"authority": "Ashford", "code": "E07000105", "totalCases": 1454, "fpnToIncidents": 0.96}, {"authority": "Broxbourne", "code": "E07000095", "totalCases": 1424, "fpnToIncidents": 4.21}, {"authority": "Hart", "code": "E07000089", "totalCases": 1414, "fpnToIncidents": 0.85}, {"authority": "Dorset", "code": "E06000059", "totalCases": 1410, "fpnToIncidents": 1.56}, {"authority": "North Hertfordshire", "code": "E07000099", "totalCases": 1387, "fpnToIncidents": 0.5}, {"authority": "St Helens", "code": "E08000013", "totalCases": 1366, "fpnToIncidents": 0.0}, {"authority": "New Forest", "code": "E07000091", "totalCases": 1361, "fpnToIncidents": 62.6}, {"authority": "Watford", "code": "E07000103", "totalCases": 1346, "fpnToIncidents": 0.97}, {"authority": "Cherwell", "code": "E07000177", "totalCases": 1332, "fpnToIncidents": 2.18}, {"authority": "Forest of Dean", "code": "E07000080", "totalCases": 1305, "fpnToIncidents": 0.46}, {"authority": "Guildford", "code": "E07000209", "totalCases": 1302, "fpnToIncidents": 0.15}, {"authority": "North Lincolnshire", "code": "E06000013", "totalCases": 1267, "fpnToIncidents": 0.08}, {"authority": "Brentwood", "code": "E07000068", "totalCases": 1249, "fpnToIncidents": 13.21}, {"authority": "Sevenoaks", "code": "E07000111", "totalCases": 1249, "fpnToIncidents": 1.44}, {"authority": "Havant", "code": "E07000090", "totalCases": 1246, "fpnToIncidents": 0.48}, {"authority": "East Hampshire", "code": "E07000085", "totalCases": 1233, "fpnToIncidents": 0.0}, {"authority": "Stroud", "code": "E07000082", "totalCases": 1232, "fpnToIncidents": 0.08}, {"authority": "Cheltenham", "code": "E07000078", "totalCases": 1205, "fpnToIncidents": 0.0}, {"authority": "Bolsover", "code": "E07000033", "totalCases": 1202, "fpnToIncidents": 1.5}, {"authority": "South Kesteven", "code": "E07000141", "totalCases": 1201, "fpnToIncidents": 0.33}, {"authority": "Spelthorne", "code": "E07000213", "totalCases": 1182, "fpnToIncidents": 5.5}, {"authority": "South Staffordshire", "code": "E07000196", "totalCases": 1171, "fpnToIncidents": 0.94}, {"authority": "Test Valley", "code": "E07000093", "totalCases": 1141, "fpnToIncidents": 1.05}, {"authority": "Calderdale", "code": "E08000033", "totalCases": 1139, "fpnToIncidents": 3.42}, {"authority": "Exeter", "code": "E07000041", "totalCases": 1115, "fpnToIncidents": 0.36}, {"authority": "Arun", "code": "E07000224", "totalCases": 1102, "fpnToIncidents": 0.54}, {"authority": "Eastbourne", "code": "E07000061", "totalCases": 1100, "fpnToIncidents": 3.27}, {"authority": "Rossendale", "code": "E07000125", "totalCases": 1100, "fpnToIncidents": 2.45}, {"authority": "Hertsmere", "code": "E07000098", "totalCases": 1094, "fpnToIncidents": 5.94}, {"authority": "Rushcliffe", "code": "E07000176", "totalCases": 1086, "fpnToIncidents": 14.55}, {"authority": "East Riding of Yorkshire", "code": "E06000011", "totalCases": 1082, "fpnToIncidents": 1.76}, {"authority": "Broxtowe", "code": "E07000172", "totalCases": 1052, "fpnToIncidents": 0.67}, {"authority": "Teignbridge", "code": "E07000045", "totalCases": 1051, "fpnToIncidents": 0.29}, {"authority": "West Berkshire", "code": "E06000037", "totalCases": 1043, "fpnToIncidents": 0.77}, {"authority": "Tonbridge and Malling", "code": "E07000115", "totalCases": 1039, "fpnToIncidents": 0.0}, {"authority": "North Warwickshire", "code": "E07000218", "totalCases": 1020, "fpnToIncidents": 1.37}, {"authority": "Charnwood", "code": "E07000130", "totalCases": 1012, "fpnToIncidents": 10.77}, {"authority": "Ashfield", "code": "E07000170", "totalCases": 1009, "fpnToIncidents": 1.19}, {"authority": "North Kesteven", "code": "E07000139", "totalCases": 992, "fpnToIncidents": 0.0}, {"authority": "West Oxfordshire", "code": "E07000181", "totalCases": 985, "fpnToIncidents": 2.13}, {"authority": "Castle Point", "code": "E07000069", "totalCases": 978, "fpnToIncidents": 0.0}, {"authority": "Tandridge", "code": "E07000215", "totalCases": 966, "fpnToIncidents": 1.35}, {"authority": "Wychavon", "code": "E07000238", "totalCases": 948, "fpnToIncidents": 0.11}, {"authority": "South Cambridgeshire", "code": "E07000012", "totalCases": 943, "fpnToIncidents": 4.98}, {"authority": "Dover", "code": "E07000108", "totalCases": 942, "fpnToIncidents": 0.0}, {"authority": "Chorley", "code": "E07000118", "totalCases": 941, "fpnToIncidents": 0.0}, {"authority": "Portsmouth", "code": "E06000044", "totalCases": 937, "fpnToIncidents": 4.06}, {"authority": "Cotswold", "code": "E07000079", "totalCases": 922, "fpnToIncidents": 2.39}, {"authority": "St Albans", "code": "E07000240", "totalCases": 919, "fpnToIncidents": 4.46}, {"authority": "Broadland", "code": "E07000144", "totalCases": 914, "fpnToIncidents": 0.33}, {"authority": "Windsor and Maidenhead", "code": "E06000040", "totalCases": 905, "fpnToIncidents": 2.65}, {"authority": "Rother", "code": "E07000064", "totalCases": 873, "fpnToIncidents": 0.92}, {"authority": "Ipswich", "code": "E07000202", "totalCases": 840, "fpnToIncidents": 2.26}, {"authority": "Newcastle-under-Lyme", "code": "E07000195", "totalCases": 840, "fpnToIncidents": 0.71}, {"authority": "Rushmoor", "code": "E07000092", "totalCases": 840, "fpnToIncidents": 3.45}, {"authority": "Hinckley and Bosworth", "code": "E07000132", "totalCases": 836, "fpnToIncidents": 0.48}, {"authority": "Wyre Forest", "code": "E07000239", "totalCases": 831, "fpnToIncidents": 2.41}, {"authority": "Breckland", "code": "E07000143", "totalCases": 830, "fpnToIncidents": 2.89}, {"authority": "Isle of Wight Council", "code": "E06000046", "totalCases": 827, "fpnToIncidents": 0.36}, {"authority": "Chichester", "code": "E07000225", "totalCases": 816, "fpnToIncidents": 0.12}, {"authority": "Braintree", "code": "E07000067", "totalCases": 807, "fpnToIncidents": 3.72}, {"authority": "East Hertfordshire", "code": "E07000242", "totalCases": 761, "fpnToIncidents": 7.23}, {"authority": "Ribble Valley", "code": "E07000124", "totalCases": 752, "fpnToIncidents": 0.0}, {"authority": "Winchester", "code": "E07000094", "totalCases": 736, "fpnToIncidents": 0.0}, {"authority": "Waverley", "code": "E07000216", "totalCases": 715, "fpnToIncidents": 0.14}, {"authority": "Blaby", "code": "E07000129", "totalCases": 710, "fpnToIncidents": 0.85}, {"authority": "Herefordshire", "code": "E06000019", "totalCases": 708, "fpnToIncidents": 3.95}, {"authority": "Tewkesbury", "code": "E07000083", "totalCases": 695, "fpnToIncidents": 1.01}, {"authority": "Rochford", "code": "E07000075", "totalCases": 665, "fpnToIncidents": 0.0}, {"authority": "Surrey Heath", "code": "E07000214", "totalCases": 665, "fpnToIncidents": 0.0}, {"authority": "South Hams", "code": "E07000044", "totalCases": 662, "fpnToIncidents": 0.0}, {"authority": "South Oxfordshire", "code": "E07000179", "totalCases": 651, "fpnToIncidents": 3.84}, {"authority": "Chelmsford", "code": "E07000070", "totalCases": 650, "fpnToIncidents": 3.38}, {"authority": "Mole Valley", "code": "E07000210", "totalCases": 644, "fpnToIncidents": 0.78}, {"authority": "Tunbridge Wells", "code": "E07000116", "totalCases": 631, "fpnToIncidents": 1.74}, {"authority": "Chesterfield", "code": "E07000034", "totalCases": 615, "fpnToIncidents": 0.81}, {"authority": "Wyre", "code": "E07000128", "totalCases": 615, "fpnToIncidents": 3.58}, {"authority": "Bracknell Forest", "code": "E06000036", "totalCases": 606, "fpnToIncidents": 0.0}, {"authority": "Wealden", "code": "E07000065", "totalCases": 602, "fpnToIncidents": 0.33}, {"authority": "North West Leicestershire", "code": "E07000134", "totalCases": 593, "fpnToIncidents": 0.84}, {"authority": "North East Derbyshire", "code": "E07000038", "totalCases": 588, "fpnToIncidents": 5.1}, {"authority": "North Devon", "code": "E07000043", "totalCases": 574, "fpnToIncidents": 0.87}, {"authority": "South Norfolk", "code": "E07000149", "totalCases": 567, "fpnToIncidents": 0.88}, {"authority": "South Derbyshire", "code": "E07000039", "totalCases": 564, "fpnToIncidents": 6.38}, {"authority": "Lichfield", "code": "E07000194", "totalCases": 552, "fpnToIncidents": 0.54}, {"authority": "Adur", "code": "E07000223", "totalCases": 547, "fpnToIncidents": 0.0}, {"authority": "Melton", "code": "E07000133", "totalCases": 536, "fpnToIncidents": 0.0}, {"authority": "Worthing", "code": "E07000229", "totalCases": 527, "fpnToIncidents": 2.47}, {"authority": "Stratford-on-Avon", "code": "E07000221", "totalCases": 523, "fpnToIncidents": 0.57}, {"authority": "Worcester", "code": "E07000237", "totalCases": 512, "fpnToIncidents": 1.37}, {"authority": "Lewes", "code": "E07000063", "totalCases": 506, "fpnToIncidents": 3.36}, {"authority": "Tendring", "code": "E07000076", "totalCases": 495, "fpnToIncidents": 0.2}, {"authority": "Mid Devon", "code": "E07000042", "totalCases": 488, "fpnToIncidents": 13.73}, {"authority": "Cannock Chase", "code": "E07000192", "totalCases": 482, "fpnToIncidents": 0.0}, {"authority": "Halton", "code": "E06000006", "totalCases": 479, "fpnToIncidents": 12.73}, {"authority": "Eastleigh", "code": "E07000086", "totalCases": 478, "fpnToIncidents": 0.0}, {"authority": "Mid Sussex", "code": "E07000228", "totalCases": 475, "fpnToIncidents": 0.0}, {"authority": "Three Rivers", "code": "E07000102", "totalCases": 455, "fpnToIncidents": 1.1}, {"authority": "Epsom and Ewell", "code": "E07000208", "totalCases": 452, "fpnToIncidents": 0.88}, {"authority": "Stafford", "code": "E07000197", "totalCases": 452, "fpnToIncidents": 1.33}, {"authority": "South Ribble", "code": "E07000126", "totalCases": 449, "fpnToIncidents": 0.67}, {"authority": "Mid Suffolk", "code": "E07000203", "totalCases": 443, "fpnToIncidents": 2.03}, {"authority": "East Cambridgeshire", "code": "E07000009", "totalCases": 441, "fpnToIncidents": 3.4}, {"authority": "Vale of White Horse", "code": "E07000180", "totalCases": 433, "fpnToIncidents": 4.16}, {"authority": "Babergh", "code": "E07000200", "totalCases": 430, "fpnToIncidents": 1.86}, {"authority": "Gedling", "code": "E07000173", "totalCases": 405, "fpnToIncidents": 5.43}, {"authority": "High Peak", "code": "E07000037", "totalCases": 402, "fpnToIncidents": 1.74}, {"authority": "Staffordshire Moorlands", "code": "E07000198", "totalCases": 397, "fpnToIncidents": 6.05}, {"authority": "East Devon", "code": "E07000040", "totalCases": 395, "fpnToIncidents": 2.53}, {"authority": "Gosport", "code": "E07000088", "totalCases": 393, "fpnToIncidents": 0.51}, {"authority": "North Norfolk", "code": "E07000147", "totalCases": 385, "fpnToIncidents": 0.0}, {"authority": "Maldon", "code": "E07000074", "totalCases": 383, "fpnToIncidents": 0.26}, {"authority": "Uttlesford", "code": "E07000077", "totalCases": 351, "fpnToIncidents": 0.0}, {"authority": "West Devon", "code": "E07000047", "totalCases": 339, "fpnToIncidents": 0.0}, {"authority": "Harborough", "code": "E07000131", "totalCases": 333, "fpnToIncidents": 0.6}, {"authority": "Fareham", "code": "E07000087", "totalCases": 307, "fpnToIncidents": 10.1}, {"authority": "Malvern Hills", "code": "E07000235", "totalCases": 298, "fpnToIncidents": 1.01}, {"authority": "Derbyshire Dales", "code": "E07000035", "totalCases": 286, "fpnToIncidents": 0.0}, {"authority": "Amber Valley", "code": "E07000032", "totalCases": 281, "fpnToIncidents": 1.42}, {"authority": "West Suffolk", "code": "E07000245", "totalCases": 276, "fpnToIncidents": 1.09}, {"authority": "Torridge", "code": "E07000046", "totalCases": 270, "fpnToIncidents": 1.48}, {"authority": "Erewash", "code": "E07000036", "totalCases": 238, "fpnToIncidents": 0.42}, {"authority": "Rutland", "code": "E06000017", "totalCases": 215, "fpnToIncidents": 0.47}, {"authority": "Oadby and Wigston", "code": "E07000135", "totalCases": 41, "fpnToIncidents": 2.44}, {"authority": "Isles of Scilly", "code": "E06000053", "totalCases": 0, "fpnToIncidents": 0.0}];
+
+    // ── Spreadsheet loader (update URL when ready) ──
+    const SPREADSHEET_CSV_URL = ''; // e.g. 'https://docs.google.com/spreadsheets/d/XXXXX/export?format=csv'
+
+    async function loadSpreadsheetData() {
+      if (!SPREADSHEET_CSV_URL) return;
+      try {
+        const res = await fetch(SPREADSHEET_CSV_URL);
+        const text = await res.text();
+        const rows = text.trim().split('\n').map(r => r.split(','));
+        const headers = rows[0];
+        ALL_DATA = rows.slice(1).map(row => {
+          const obj = {};
+          headers.forEach((h, i) => { obj[h.trim()] = row[i] ? row[i].trim() : ''; });
+          return {
+            authority: obj['authority'] || obj['Local Authority'] || obj['la_name'] || '',
+            code: obj['code'] || obj['la_code'] || obj['ONS Code'] || '',
+            totalCases: parseFloat(obj['totalCases'] || obj['total_cases'] || obj['Total Incidents'] || 0),
+            penaltyRate: parseFloat(obj['penaltyRate'] || obj['penalty_rate'] || obj['FPN Rate'] || 0),
+            fpnToIncidents: parseFloat(obj['fpnToIncidents'] || obj['fpn_to_incidents'] || obj['% FPNs to Incidents'] || 0),
+          };
+        }).filter(d => d.authority);
+        initDashboard();
+      } catch (e) {
+        console.error('Failed to load spreadsheet:', e);
+      }
+    }
+
+    // ── State ──
+    let currentSort = { key: 'totalCases', dir: 'desc' };
+    let pageSize = 20;
+    let currentPage = 1;
+    let searchTerm = '';
+
+    // ── Helpers ──
+    function formatNumber(n) {
+      return n.toLocaleString('en-GB');
+    }
+
+    function getRating(value) {
+      if (value > 100) return { label: 'Suspicious', color: '#9B59B6' };
+      if (value <= 5) return { label: 'Disgraceful', color: '#7f1d1d' };
+      if (value <= 10) return { label: 'Very Poor', color: '#dc2626' };
+      if (value <= 20) return { label: 'Poor', color: '#f97316' };
+      if (value <= 40) return { label: 'Decent', color: '#eab308' };
+      return { label: 'Acceptable', color: '#16a34a' };
+    }
+
+    // ── Sort ──
+    function sortTable(key) {
+      if (currentSort.key === key) {
+        currentSort.dir = currentSort.dir === 'desc' ? 'asc' : 'desc';
+      } else {
+        currentSort = { key, dir: key === 'authority' ? 'asc' : 'desc' };
+      }
+      currentPage = 1;
+      renderTable();
+    }
+
+    function getSortedData() {
+      let data = [...ALL_DATA];
+      if (searchTerm) {
+        const q = searchTerm.toLowerCase();
+        data = data.filter(d => d.authority.toLowerCase().includes(q) || d.code.toLowerCase().includes(q));
+      }
+      const { key, dir } = currentSort;
+      data.sort((a, b) => {
+        let va = a[key], vb = b[key];
+        if (typeof va === 'string') { va = va.toLowerCase(); vb = vb.toLowerCase(); }
+        if (va < vb) return dir === 'asc' ? -1 : 1;
+        if (va > vb) return dir === 'asc' ? 1 : -1;
+        return 0;
+      });
+      // Add rank
+      data.forEach((d, i) => { d.rank = i + 1; });
+      return data;
+    }
+
+    // ── Render ──
+    function renderTable() {
+      const body = document.getElementById('table-body');
+      const footer = document.getElementById('table-footer');
+      const sorted = getSortedData();
+      const visible = sorted.slice(0, currentPage * pageSize);
+
+      if (ALL_DATA.length === 0) {
+        body.innerHTML = `
+          <div class="empty-state">
+            <div class="icon">📊</div>
+            <h3>Data Loading Soon</h3>
+            <p>New data will be available when the spreadsheet is connected.<br>Check back at 9:30 AM on release day.</p>
+          </div>`;
+        footer.style.display = 'none';
+        return;
+      }
+
+      if (sorted.length === 0) {
+        body.innerHTML = `
+          <div class="empty-state">
+            <div class="icon">🔍</div>
+            <h3>No results found</h3>
+            <p>Try a different search term</p>
+          </div>`;
+        footer.style.display = 'none';
+        return;
+      }
+
+      let html = '';
+      visible.forEach(d => {
+        const fpnRating = getRating(d.fpnToIncidents);
+
+        html += `
+          <div class="table-row">
+            <div class="rank">${d.rank}</div>
+            <div class="col-name">
+              <div>
+                <div class="authority-name">${d.authority}</div>
+              </div>
+            </div>
+            <div class="col-total">
+              <div>
+                <div class="stat-value">${formatNumber(d.totalCases)}</div>
+                <div class="stat-label">total</div>
+              </div>
+            </div>
+            <div>
+              <div>
+                <div class="stat-value" style="color:${fpnRating.color}">${d.fpnToIncidents.toFixed(1)}%</div>
+                <div class="stat-label">${fpnRating.label}</div>
+              </div>
+            </div>
+          </div>`;
+      });
+
+      body.innerHTML = html;
+
+      document.getElementById('showing-count').textContent = Math.min(visible.length, sorted.length);
+      footer.style.display = visible.length < sorted.length ? 'block' : 'block';
+      footer.querySelector('button').style.display = visible.length < sorted.length ? 'inline-block' : 'none';
+
+      // Update sort arrows
+      ['authority','totalCases','fpnToIncidents'].forEach(k => {
+        const el = document.getElementById('sort-' + k);
+        if (el) {
+          if (currentSort.key === k) {
+            el.innerHTML = currentSort.dir === 'desc' ? '&#9660;' : '&#9650;';
+          } else {
+            el.innerHTML = '';
+          }
+        }
+      });
+    }
+
+    function showMore() {
+      currentPage++;
+      renderTable();
+    }
+
+    let tableExpanded = false;
+
+    function toggleTable() {
+      tableExpanded = !tableExpanded;
+      const wrapper = document.getElementById('table-wrapper');
+      const btn = document.getElementById('table-toggle-btn');
+      const label = document.getElementById('toggle-label');
+      const preview = document.getElementById('search-preview');
+      wrapper.style.display = tableExpanded ? 'block' : 'none';
+      btn.classList.toggle('open', tableExpanded);
+      label.textContent = tableExpanded ? 'Hide table' : 'View full table';
+      if (tableExpanded) { preview.style.display = 'none'; }
+    }
+
+    function renderSearchPreview() {
+      const preview = document.getElementById('search-preview');
+      if (!searchTerm || tableExpanded || ALL_DATA.length === 0) {
+        preview.style.display = 'none';
+        return;
+      }
+      const q = searchTerm.toLowerCase();
+      const matches = ALL_DATA.filter(d => d.authority.toLowerCase().includes(q)).slice(0, 5);
+      if (matches.length === 0) {
+        preview.style.display = 'block';
+        preview.innerHTML = '<div style="text-align:center;color:#6b7280;padding:1rem;">No matching local authorities found</div>';
+        return;
+      }
+      preview.style.display = 'flex';
+      preview.innerHTML = matches.map(d => {
+        const rating = getRating(d.fpnToIncidents);
+        return `<div class="search-preview-item" onclick="expandToResult('${d.authority.replace(/'/g, "\\'")}')">
+          <div>
+            <div class="search-preview-name">${d.authority}</div>
+            <div class="search-preview-label">${formatNumber(d.totalCases)} total cases</div>
+          </div>
+          <div style="text-align:right;">
+            <div class="search-preview-stat" style="color:${rating.color}">${d.fpnToIncidents.toFixed(1)}%</div>
+            <div class="search-preview-label">FPNs to incidents</div>
+          </div>
+        </div>`;
+      }).join('');
+    }
+
+    function expandToResult(name) {
+      document.getElementById('search-input').value = name;
+      searchTerm = name;
+      currentPage = 1;
+      tableExpanded = true;
+      document.getElementById('table-wrapper').style.display = 'block';
+      document.getElementById('table-toggle-btn').classList.add('open');
+      document.getElementById('toggle-label').textContent = 'Hide table';
+      document.getElementById('search-preview').style.display = 'none';
+      renderTable();
+    }
+
+    function handleSearch(value) {
+      searchTerm = value;
+      currentPage = 1;
+      renderSearchPreview();
+      if (tableExpanded) { renderTable(); }
+    }
+
+    // ── Stats ──
+    function updateStats() {
+      if (ALL_DATA.length === 0) return;
+      const avgFpnToInc = ALL_DATA.reduce((s, d) => s + d.fpnToIncidents, 0) / ALL_DATA.length;
+      document.getElementById('stat-avg-fpn').textContent = avgFpnToInc.toFixed(2) + '%';
+
+      // Worst council = lowest FPN to incidents ratio
+      const worst = ALL_DATA.reduce((min, d) => d.fpnToIncidents < min.fpnToIncidents ? d : min, ALL_DATA[0]);
+      document.getElementById('stat-worst-council').textContent = worst.authority;
+      document.getElementById('stat-worst-council-rate').textContent = worst.fpnToIncidents.toFixed(2) + '% FPNs to incidents';
+
+      // Most incidents
+      const most = ALL_DATA.reduce((max, d) => d.totalCases > max.totalCases ? d : max, ALL_DATA[0]);
+      document.getElementById('stat-most-incidents').textContent = most.authority;
+      document.getElementById('stat-most-incidents-count').textContent = formatNumber(most.totalCases) + ' incidents';
+
+    }
+
+    // ── Newsletter (Brevo via Zapier) ──
+    function handleNewsletter(e, form) {
+      e.preventDefault();
+      const name = form.querySelector('input[name="firstName"]').value;
+      const email = form.querySelector('input[name="email"]').value;
+
+      const payload = new URLSearchParams({
+        'Name': name,
+        'Email': email,
+        'List ID(s)': '119'
+      });
+
+      fetch('https://hooks.zapier.com/hooks/catch/24440311/ursog2a/', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: payload.toString()
+      })
+      .then(res => {
+        if (!res.ok) throw new Error('Failed');
+        form.reset();
+        document.getElementById('signup-modal').classList.add('show');
+      })
+      .catch(() => {
+        alert('Something went wrong. Please try again.');
+      });
+
+      return false;
+    }
+
+    // ── Map ──
+    let map = null;
+
+    function initMap() {
+      map = new maplibregl.Map({
+        container: 'map',
+        style: {
+          version: 8,
+          sources: {},
+          layers: [{
+            id: 'background',
+            type: 'background',
+            paint: { 'background-color': '#79CAC4' }
+          }]
+        },
+        center: [-1.5, 52.8],
+        zoom: 5.5,
+        maxBounds: [[-12, 49], [5, 57]]
+      });
+
+      map.addControl(new maplibregl.NavigationControl(), 'top-left');
+
+      map.on('load', () => {
+        fetch('england-la.geojson')
+          .then(r => r.json())
+          .then(geojson => {
+            // Attach data to features if available
+            if (ALL_DATA.length > 0) {
+              const dataMap = {};
+              ALL_DATA.forEach(d => { dataMap[d.code] = d; });
+              geojson.features.forEach(f => {
+                const code = f.properties.LAD24CD;
+                const d = dataMap[code];
+                if (d) {
+                  f.properties.totalCases = d.totalCases;
+                  f.properties.fpnToIncidents = d.fpnToIncidents;
+                  f.properties.solveRate = d.fpnToIncidents;
+                  f.properties.hasData = true;
+                } else {
+                  f.properties.hasData = false;
+                  f.properties.solveRate = -1;
+                }
+              });
+            } else {
+              geojson.features.forEach(f => {
+                f.properties.hasData = false;
+                f.properties.solveRate = -1;
+              });
+            }
+
+            map.addSource('la-boundaries', { type: 'geojson', data: geojson });
+
+            // Fill layer with color based on solve rate (cream when no data)
+            map.addLayer({
+              id: 'la-fill',
+              type: 'fill',
+              source: 'la-boundaries',
+              paint: {
+                'fill-color': [
+                  'case',
+                  ['==', ['get', 'hasData'], false], '#EBE3D0',
+                  ['>', ['get', 'solveRate'], 100], '#9B59B6',
+                  ['<', ['get', 'solveRate'], 5], '#7f1d1d',
+                  ['<', ['get', 'solveRate'], 10], '#dc2626',
+                  ['<', ['get', 'solveRate'], 20], '#f97316',
+                  ['<', ['get', 'solveRate'], 40], '#eab308',
+                  '#16a34a'
+                ],
+                'fill-opacity': 1
+              }
+            });
+
+            // Border layer — black like Tax Calculator
+            map.addLayer({
+              id: 'la-border',
+              type: 'line',
+              source: 'la-boundaries',
+              paint: {
+                'line-color': '#000000',
+                'line-width': 1
+              }
+            });
+
+            let hoveredId = null;
+
+            map.on('mousemove', 'la-fill', (e) => {
+              map.getCanvas().style.cursor = 'pointer';
+              if (e.features.length > 0) {
+                if (hoveredId !== null) {
+                  map.setFeatureState({ source: 'la-boundaries', id: hoveredId }, { hover: false });
+                }
+                hoveredId = e.features[0].id;
+                map.setFeatureState({ source: 'la-boundaries', id: hoveredId }, { hover: true });
+              }
+            });
+
+            map.on('mouseleave', 'la-fill', () => {
+              map.getCanvas().style.cursor = '';
+              if (hoveredId !== null) {
+                map.setFeatureState({ source: 'la-boundaries', id: hoveredId }, { hover: false });
+                hoveredId = null;
+              }
+            });
+
+            // Popup on click
+            map.on('click', 'la-fill', (e) => {
+              if (!e.features.length) return;
+              const props = e.features[0].properties;
+              let content = `<div class="map-popup">
+                <h4>${props.LAD24NM}</h4>`;
+
+              if (props.hasData === true || props.hasData === 'true') {
+                content += `<div class="stats">
+                  <div><strong>Total Cases:</strong> ${formatNumber(props.totalCases)}</div>
+                  <div><strong>% FPNs to Incidents:</strong> ${parseFloat(props.fpnToIncidents).toFixed(1)}%</div>
+                </div>`;
+              } else {
+                content += `<div class="stats"><div style="color:#6b7280;">No data available yet</div></div>`;
+              }
+              content += '</div>';
+
+              new maplibregl.Popup({ maxWidth: '300px' })
+                .setLngLat(e.lngLat)
+                .setHTML(content)
+                .addTo(map);
+            });
+          })
+          .catch(err => {
+            console.error('Failed to load GeoJSON:', err);
+            document.getElementById('map').innerHTML = '<div class="map-placeholder">Failed to load map data</div>';
+          });
+      });
+    }
+
+    // ── Init ──
+    function initDashboard() {
+      renderTable();
+      updateStats();
+      // Re-color map if it's already loaded
+      if (map && map.getSource('la-boundaries')) {
+        updateMapColors();
+      }
+    }
+
+    function updateMapColors() {
+      if (!map || !map.getSource('la-boundaries')) return;
+      const source = map.getSource('la-boundaries');
+      // Re-fetch and re-color
+      fetch('england-la.geojson')
+        .then(r => r.json())
+        .then(geojson => {
+          const dataMap = {};
+          ALL_DATA.forEach(d => { dataMap[d.code] = d; });
+          geojson.features.forEach(f => {
+            const code = f.properties.LAD24CD;
+            const d = dataMap[code];
+            if (d) {
+              f.properties.totalCases = d.totalCases;
+              f.properties.fpnToIncidents = d.fpnToIncidents;
+              f.properties.solveRate = d.fpnToIncidents;
+              f.properties.hasData = true;
+            } else {
+              f.properties.hasData = false;
+              f.properties.solveRate = -1;
+            }
+          });
+          source.setData(geojson);
+        });
+    }
+
+    // Load data on page ready
+    document.addEventListener('DOMContentLoaded', () => {
+      initMap();
+      // If inline data exists, render immediately; otherwise try spreadsheet
+      if (ALL_DATA.length > 0) {
+        initDashboard();
+      } else {
+        loadSpreadsheetData();
+        if (!SPREADSHEET_CSV_URL) {
+          renderTable();
+        }
+      }
+    });
+  </script>
+
+  <!-- Signup Success Modal -->
+  <div class="signup-modal-overlay" id="signup-modal" onclick="if(event.target===this)this.classList.remove('show')">
+    <div class="signup-modal">
+      <button class="signup-modal-x" onclick="document.getElementById('signup-modal').classList.remove('show')" aria-label="Close">&times;</button>
+      <h3>Thanks for signing up!</h3>
+      <p>Follow us on social media to stay in the loop.</p>
+      <div class="signup-modal-socials">
+        <a href="https://x.com/lfg_uk" target="_blank" rel="noopener noreferrer" class="btn-x">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
+          @lfg_uk
+        </a>
+        <a href="https://www.instagram.com/lookingforgrowthuk/" target="_blank" rel="noopener noreferrer" class="btn-ig">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zM12 0C8.741 0 8.333.014 7.053.072 2.695.272.273 2.69.073 7.052.014 8.333 0 8.741 0 12c0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98C8.333 23.986 8.741 24 12 24c3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98C15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 100 12.324 6.162 6.162 0 000-12.324zM12 16a4 4 0 110-8 4 4 0 010 8zm6.406-11.845a1.44 1.44 0 100 2.881 1.44 1.44 0 000-2.881z"/></svg>
+          Instagram
+        </a>
+      </div>
+      <a href="https://lookingforgrowth.uk/donate?_gl=1*lzh2sr*_ga*MTc3MTk0NDY4OC4xNzcxOTU1ODU4*_ga_7TVCX31D4P*czE3NzE5NzExMzMkbzMkZzEkdDE3NzE5NzM1OTAkajEyJGwwJGgw" target="_blank" rel="noopener noreferrer" style="display:flex;align-items:center;justify-content:center;gap:.5rem;padding:.75rem 1.25rem;font-weight:700;font-size:.95rem;text-decoration:none;color:#fff;border:2px solid #000;background:#FE5500;margin-bottom:1.5rem;transition:opacity .2s;">Donate</a>
+      <button class="signup-modal-close" onclick="document.getElementById('signup-modal').classList.remove('show')">Close</button>
+    </div>
+  </div>
+
+  <!-- Cookie Banner -->
+  <div id="cookie-banner" style="display: none; background-color: #FE5500; z-index: 9999; position: fixed; bottom: 0; left: 0; right: 0; padding: 1rem; border-top: 2px solid black; color: white; font-family: 'DM Sans', sans-serif;">
+    <div style="display: flex; flex-wrap: wrap; gap: 0.75rem; align-items: center; justify-content: space-between; max-width: 1400px; margin: 0 auto;">
+      <div>
+        We use cookies to improve your experience on our site. By using our site, you agree to our
+        <a href="https://lfg-site-content.s3.eu-west-2.amazonaws.com/Privacy+Policy.pdf" style="color: #2563eb; text-decoration: underline;">Cookie Policy</a>.
+      </div>
+      <div style="display: flex; align-items: center; gap: 0.5rem;">
+        <button onclick="handleCookieAccept()" style="background-color: #4A7C59; border-top: 2px solid black; border-bottom: 6px solid black; border-left: 2px solid black; border-right: 6px solid black; color: white; border-radius: 0.5rem; padding: 0.625rem 1.5rem; cursor: pointer; font-family: 'DM Sans', sans-serif; font-weight: 600;">Accept</button>
+        <button onclick="handleCookieDecline()" style="background-color: #EF4444; border-top: 2px solid black; border-bottom: 6px solid black; border-left: 2px solid black; border-right: 6px solid black; color: white; border-radius: 0.5rem; padding: 0.625rem 1.5rem; cursor: pointer; font-family: 'DM Sans', sans-serif; font-weight: 600;">Decline</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const cookieConsent = document.cookie.split('; ').find(r => r.startsWith('cookie-consent='));
+    if (!cookieConsent) document.getElementById('cookie-banner').style.display = 'flex';
+
+    if (cookieConsent === 'cookie-consent=true') loadGA();
+
+    function loadGA() {
+      const script = document.createElement('script');
+      script.src = 'https://www.googletagmanager.com/gtag/js?id=G-7TVCX31D4P';
+      script.async = true;
+      document.head.appendChild(script);
+      script.onload = function() {
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){ dataLayer.push(arguments); }
+        gtag('js', new Date());
+        gtag('config', 'G-7TVCX31D4P');
+      };
+    }
+
+    function handleCookieAccept() {
+      document.cookie = 'cookie-consent=true; max-age=31536000; path=/';
+      document.getElementById('cookie-banner').style.display = 'none';
+      window.dispatchEvent(new CustomEvent('cookieConsentChanged', { detail: { consent: true } }));
+      loadGA();
+    }
+
+    function handleCookieDecline() {
+      document.cookie = 'cookie-consent=false; max-age=31536000; path=/';
+      document.getElementById('cookie-banner').style.display = 'none';
+      window.dispatchEvent(new CustomEvent('cookieConsentChanged', { detail: { consent: false } }));
+    }
+  </script>
+
+</body>
+</html>
