@@ -516,8 +516,8 @@
           <div class="legend-item"><div class="legend-swatch" style="background:#7f1d1d"></div> 0-5% Disgraceful</div>
           <div class="legend-item"><div class="legend-swatch" style="background:#dc2626"></div> 5-10% Very Poor</div>
           <div class="legend-item"><div class="legend-swatch" style="background:#f97316"></div> 10-20% Poor</div>
-          <div class="legend-item"><div class="legend-swatch" style="background:#eab308"></div> 20-40% Below Average</div>
-          <div class="legend-item"><div class="legend-swatch" style="background:#16a34a"></div> 40-100% Excellent</div>
+          <div class="legend-item"><div class="legend-swatch" style="background:#eab308"></div> 20-40% Decent</div>
+          <div class="legend-item"><div class="legend-swatch" style="background:#16a34a"></div> 40-100% Acceptable</div>
           <div class="legend-item"><div class="legend-swatch" style="background:#9B59B6"></div> 100%+ Suspicious</div>
           <div class="legend-item"><div class="legend-swatch" style="background:#EBE3D0"></div> No data</div>
         </div>
@@ -526,6 +526,7 @@
         <p>A Fixed Penalty Notice is a mechanism from the Government to allow someone to avoid prosecution and discharge their liability through paying a fine.</p>
         <p>Anything highlighted in purple is a suspicious value (over 100%). This could be due to several factors, such as multiple offenders being involved in a single fly-tipping incident, or reporting issues.</p>
         <p>The 'Worst Council' is the local authority with the lowest ratio of Fixed Penalty Notices issued to fly-tipping incidents reported. This measures how poorly a council is using its enforcement powers relative to the scale of the problem in its area.</p>
+        <p><strong>Source:</strong> <a href="https://www.gov.uk/government/statistics/announcements/fly-tipping-statistics-for-england--3" target="_blank" rel="noopener noreferrer">Fly-tipping statistics for England — GOV.UK</a></p>
       </div>
     </div>
   </div>
@@ -657,8 +658,8 @@
       if (value <= 5) return { label: 'Disgraceful', color: '#7f1d1d' };
       if (value <= 10) return { label: 'Very Poor', color: '#dc2626' };
       if (value <= 20) return { label: 'Poor', color: '#f97316' };
-      if (value <= 40) return { label: 'Below Average', color: '#eab308' };
-      return { label: 'Excellent', color: '#16a34a' };
+      if (value <= 40) return { label: 'Decent', color: '#eab308' };
+      return { label: 'Acceptable', color: '#16a34a' };
     }
 
     // ── Sort ──
