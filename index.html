@@ -485,10 +485,6 @@
       <!-- Stats Cards -->
       <div class="stats-grid" id="stats-grid">
         <div class="stat-card">
-          <div class="stat-big" style="color:#ea580c;" id="stat-avg-fpn">—</div>
-          <div class="stat-desc">Avg % of FPNs to Incidents</div>
-        </div>
-        <div class="stat-card">
           <div class="stat-big" style="color:#7f1d1d;" id="stat-worst-council">—</div>
           <div class="stat-desc">Worst Council</div>
           <div style="font-size:.75rem;color:#6b7280;margin-top:.25rem;" id="stat-worst-council-rate"></div>
@@ -836,9 +832,6 @@
     // ── Stats ──
     function updateStats() {
       if (ALL_DATA.length === 0) return;
-      const avgFpnToInc = ALL_DATA.reduce((s, d) => s + d.fpnToIncidents, 0) / ALL_DATA.length;
-      document.getElementById('stat-avg-fpn').textContent = avgFpnToInc.toFixed(2) + '%';
-
       // Worst council = lowest FPN to incidents ratio
       const worst = ALL_DATA.reduce((min, d) => d.fpnToIncidents < min.fpnToIncidents ? d : min, ALL_DATA[0]);
       document.getElementById('stat-worst-council').textContent = worst.authority;
